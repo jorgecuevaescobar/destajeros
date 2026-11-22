@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17322a">
+<title>Destajeros CAC</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{--bg:#f4f5f2;--card:#fff;--ink:#1d2321;--muted:#6b736f;--line:#e1e4df;--green:#1f7a4d;--green-bg:#e3f2ea;--red:#b23a2e;--amber:#9a6a00;--amber-bg:#fff4d6;--blue:#1f4f7a}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Roboto,sans-serif;-webkit-text-size-adjust:100%}
+  header{background:#17322a;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 0}
+  header h1{margin:0;font-size:19px}
+  header .sub{font-size:13px;opacity:.75}
+  nav{display:flex;margin-top:10px}
+  nav button{flex:1;background:none;border:0;color:#cfe0d8;font:600 15px system-ui;padding:12px 4px;border-bottom:3px solid transparent}
+  nav button.on{color:#fff;border-bottom-color:#7fd1a6}
+  main{padding:14px 14px 100px;max-width:640px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+  input,select{font:16px system-ui;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  label{font-size:13px;color:var(--muted);display:block;margin:10px 0 4px}
+  .row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+  .btn{border:0;border-radius:12px;padding:13px 14px;font:700 15px system-ui;background:#e9ece8;color:var(--ink);cursor:pointer}
+  .btn.full{width:100%}.btn.g{background:var(--green);color:#fff}.btn.r{background:var(--red);color:#fff}.btn.b{background:var(--blue);color:#fff}
+  .btn.ghost{background:none;border:1px solid var(--line)}.btn:disabled{opacity:.45}
+  .big2{display:flex;gap:10px;margin-bottom:12px}
+  .bigbtn{flex:1;border:0;border-radius:16px;padding:20px 8px;font:700 16px system-ui;background:#fff;border:2px solid #cfe3d8;color:var(--ink)}
+  .bigbtn .i{font-size:34px;display:block;margin-bottom:4px}
+  .bigbtn.on{background:var(--green-bg);border-color:var(--green)}
+  .pill{font-size:13px;padding:8px 12px;border-radius:10px;margin-bottom:12px;display:none}
+  .pill.show{display:block}.pill.ok{background:var(--green-bg);color:var(--green)}.pill.warn{background:var(--amber-bg);color:var(--amber)}
+  .res{border-radius:16px;padding:18px 16px;margin-bottom:12px;color:#fff}
+  .res.ing{background:var(--green)}.res.sal{background:var(--red)}.res.warn{background:#fff;color:var(--ink);border:2px solid var(--amber)}.res.wait{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .res .big{font-size:30px;font-weight:800}.res .nm{font-size:21px;font-weight:700;margin-top:4px}.res .dt{opacity:.9;font-size:14px;margin-top:2px}
+  .res .btn{margin-top:12px}.res .wbtn{background:none;border:1px solid #ffffff90;color:#fff}
+  .sec{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 2px 6px}
+  .list{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}
+  .item:first-child{border-top:0}.item.in{background:var(--green-bg)}
+  .who{flex:1;min-width:0}.name{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{font-size:13px;color:var(--muted)}
+  .act{flex:none;min-width:100px}
+  .empty{padding:16px;text-align:center;color:var(--muted);font-size:14px}
+  .hint{font-size:13px;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1d2321;color:#fff;padding:11px 14px;border-radius:10px;font-size:14px;display:none;z-index:20;max-width:92vw}
+  .toast.show{display:block}
+  .spin{display:inline-block;width:18px;height:18px;border:3px solid #cfd6d2;border-top-color:var(--green);border-radius:50%;animation:s 1s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Destajeros · Sala de cierre</h1>
+  <div class="sub" id="hoy"></div>
+  <nav>
+    <button data-tab="marcar" class="on">Marcar</button>
+    <button data-tab="personal">Personal</button>
+    <button data-tab="ajustes">Ajustes</button>
+  </nav>
+</header>
+
+<main>
+  <!-- MARCAR -->
+  <section id="t-marcar">
+    <div class="pill warn" id="pillConf">Falta configurar la app. Ve a <b>Ajustes</b>.</div>
+    <div class="big2">
+      <button class="bigbtn" id="bNfc"><span class="i">📶</span>Tarjeta NFC</button>
+      <label class="bigbtn" for="fotoIn"><span class="i">📷</span>Foto del DNI</label>
+      <input type="file" id="fotoIn" accept="image/*" capture="environment" hidden>
+    </div>
+    <div class="pill" id="pillNfc"></div>
+    <div class="card row">
+      <input id="dniIn" inputmode="numeric" maxlength="9" placeholder="…o escribe el DNI / C.E." autocomplete="off">
+      <button class="btn g" id="dniGo" style="flex:0 0 70px">OK</button>
+    </div>
+    <div id="res"></div>
+    <div class="card">
+      <label style="margin-top:0">Descripción de apoyo</label>
+      <input id="labor" list="labores" placeholder="SALA DE CIERRE">
+      <datalist id="labores"><option value="SALA DE CIERRE"><option value="APOYO A SALA CIERRE"><option value="MONDINI"><option value="ACONDICIONAMIENTO"><option value="LIMPIEZA PROFUNDA SALAS PROCESO"></datalist>
+      <label>Observación (opcional, se guarda con la próxima marca)</label>
+      <input id="obs" list="obsl" placeholder="Ej: 45 MIN DE COMIDA, JORNALERO">
+      <datalist id="obsl"><option value="45 MIN DE COMIDA"><option value="50 MIN DE COMIDA"><option value="JORNALERO"></datalist>
+    </div>
+    <div class="sec" id="secSala">En sala (0)</div>
+    <div id="sala"></div>
+    <div style="margin-top:10px" id="zonaTodos"></div>
+    <div class="sec">Últimas marcas de hoy</div>
+    <div id="ultimas"></div>
+    <div class="sec">Por ingresar</div>
+    <input id="buscar" placeholder="🔍 Buscar nombre o DNI" autocomplete="off" style="margin-bottom:8px">
+    <div id="fuera"></div>
+  </section>
+
+  <!-- PERSONAL -->
+  <section id="t-personal" hidden>
+    <div class="card">
+      <b>Agregar o actualizar destajero</b>
+      <label>DNI o C.E.</label><input id="pDni" inputmode="numeric" maxlength="9" autocomplete="off">
+      <label>Nombre y apellido</label><input id="pNom" autocomplete="off">
+      <label>Tarjeta NFC (opcional)</label>
+      <div class="row"><input id="pTar" placeholder="Sin tarjeta" readonly><button class="btn ghost" id="pLeer" style="flex:0 0 120px">📶 Leer</button></div>
+      <div style="height:12px"></div>
+      <button class="btn g full" id="pGuardar">Guardar</button>
+    </div>
+    <div class="sec" id="pCount">Lista</div>
+    <div id="pLista"></div>
+    <p class="hint">Para corregir horas o borrar un registro, ábrelo en la hoja de Google (Ajustes → Abrir hoja).</p>
+  </section>
+
+  <!-- AJUSTES -->
+  <section id="t-ajustes" hidden>
+    <div class="card">
+      <b>Conexión con la hoja de Google</b>
+      <label>URL de la aplicación web (Apps Script)</label>
+      <input id="cUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+      <label>Clave</label><input id="cClave" autocomplete="off">
+      <label>Tu nombre (queda en el registro)</label><input id="cPor" placeholder="Ej: Supervisor Luis" autocomplete="off">
+      <div class="row"><div><label>Refrigerio a descontar (min)</label><input id="cRefri" inputmode="numeric" placeholder="45"></div>
+      <div><label>Solo si trabajó más de (horas)</label><input id="cUmbral" inputmode="decimal" placeholder="6"></div></div>
+      <div style="height:12px"></div>
+      <button class="btn g full" id="cGuardar">Guardar y probar</button>
+    </div>
+    <div class="card">
+      <b>Para tus supervisores</b>
+      <div class="hint">Envía este link por WhatsApp. Al abrirlo, la app queda configurada sola.</div>
+      <div style="height:10px"></div>
+      <button class="btn b full" id="cCompartir">Compartir link de configuración</button>
+    </div>
+    <div class="card" id="cardInstalar" hidden>
+      <b>Instalar en este celular</b>
+      <div style="height:10px"></div>
+      <button class="btn g full" id="bInstalar">⬇ Instalar app</button>
+    </div>
+    <div class="card"><a id="linkHoja" class="btn ghost full" style="display:block;text-align:center;text-decoration:none;color:inherit" target="_blank" rel="noopener">📊 Abrir hoja de Google (Excel)</a></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes());};
+const dur=x=>{if(x==null||x<0)return'—';const m=Math.round(x/60000);return Math.floor(m/60)+':'+pad(m%60);};
+const horasTxt=h=>{const m=Math.round(Number(h)*60);return Math.floor(m/60)+':'+pad(m%60);};
+const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const d0=new Date(); $('#hoy').textContent=(DIAS[d0.getDay()]+' '+d0.getDate()+' de '+MES[d0.getMonth()]).replace(/^./,c=>c.toUpperCase());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);}
+function vibrar(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+
+/* ---------- configuración ---------- */
+let cfg={url:ls.get('url',''),clave:ls.get('clave',''),por:ls.get('por',''),refri:ls.get('refri','45'),umbral:ls.get('umbral','6')};
+(function leerLink(){
+  const q=new URLSearchParams(location.search);
+  if(q.get('u')){ cfg.url=q.get('u'); cfg.clave=q.get('k')||''; ls.set('url',cfg.url); ls.set('clave',cfg.clave); if(q.get('r')){ cfg.refri=q.get('r'); ls.set('refri',cfg.refri); } if(q.get('h')){ cfg.umbral=q.get('h'); ls.set('umbral',cfg.umbral); } history.replaceState(null,'',location.pathname); setTimeout(()=>toast('App configurada ✔'),300); }
+})();
+$('#cUrl').value=cfg.url; $('#cClave').value=cfg.clave; $('#cPor').value=cfg.por; $('#cRefri').value=cfg.refri; $('#cUmbral').value=cfg.umbral;
+$('#labor').value=ls.get('labor',''); $('#labor').onchange=()=>ls.set('labor',$('#labor').value.trim());
+const listo=()=>!!(cfg.url&&cfg.clave);
+$('#pillConf').classList.toggle('show',!listo());
+
+async function api(accion,datos){
+  if(!listo()) throw new Error('Falta configurar la app en Ajustes');
+  let r;
+  try{ r=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({clave:cfg.clave,accion},datos||{}))}); }
+  catch(e){ throw new Error('Sin conexión. Revisa la señal o el WiFi.'); }
+  let j; try{ j=await r.json(); }catch(e){ throw new Error('La hoja no respondió bien. Revisa la URL en Ajustes.'); }
+  if(!j.ok) throw new Error(j.error||'Error');
+  return j;
+}
+
+/* ---------- estado ---------- */
+let personas=[],abiertas=[],ultimas=[],hojaUrl='';
+async function refrescar(silencio){
+  if(!listo()) return render();
+  try{ const j=await api('estado'); personas=j.personas; abiertas=j.abiertas; ultimas=j.ultimas; hojaUrl=j.hoja; render(); }
+  catch(e){ if(!silencio) toast(e.message); }
+}
+setInterval(()=>{ if(document.visibilityState==='visible') refrescar(true); },30000);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ refrescar(true); if(ls.get('nfc','')==='1') iniciarNfc(true); } });
+
+function render(){
+  const q=$('#buscar').value.trim().toLowerCase();
+  const enSala=new Set(abiertas.map(a=>a.dni));
+  $('#secSala').textContent='En sala ('+abiertas.length+')';
+  $('#sala').innerHTML='<div class="list">'+(abiertas.length?[...abiertas].sort((a,b)=>a.ingreso-b.ingreso).map(a=>`
+    <div class="item in"><div class="who"><div class="name">${esc(a.nombre)}</div><div class="meta">Entró ${hm(a.ingreso)} · lleva ${dur(Date.now()-a.ingreso)} h${a.labor?' · '+esc(a.labor):''}</div></div>
+    <button class="btn r act" data-dni="${esc(a.dni)}">SALIDA</button></div>`).join(''):'<div class="empty">Nadie en sala.</div>')+'</div>';
+  $('#zonaTodos').innerHTML=abiertas.length>1?'<button class="btn r full" id="bTodos">Marcar SALIDA a todos ('+abiertas.length+')</button>':'';
+  if($('#bTodos')) $('#bTodos').onclick=salidaTodos;
+  $('#ultimas').innerHTML='<div class="list">'+(ultimas.length?ultimas.map(e=>`<div class="item ${e.tipo==='Ingreso'?'in':''}"><div class="who"><div class="name">${esc(e.n)}</div><div class="meta">${e.tipo} ${hm(e.t)}${e.h!==''&&e.h!=null?' · '+horasTxt(e.h)+' h':''}</div></div></div>`).join(''):'<div class="empty">Aún no hay marcas hoy.</div>')+'</div>';
+  const fuera=personas.filter(p=>!enSala.has(p.dni)&&(!q||p.nombre.toLowerCase().includes(q)||p.dni.includes(q))).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  $('#fuera').innerHTML='<div class="list">'+(fuera.length?fuera.slice(0,60).map(p=>`<div class="item"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">DNI ${esc(p.dni)}${p.tarjeta?' · 📶':''}</div></div>
+    <button class="btn g act" data-dni="${esc(p.dni)}">INGRESO</button></div>`).join(''):'<div class="empty">'+(personas.length?'Nadie con ese nombre o DNI.':'Aún no hay personal registrado.')+'</div>')+'</div>';
+  const pl=[...personas].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  $('#pCount').textContent='Lista ('+pl.length+')';
+  $('#pLista').innerHTML='<div class="list">'+(pl.length?pl.map(p=>`<div class="item"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">DNI ${esc(p.dni)} · ${p.tarjeta?'📶 con tarjeta':'sin tarjeta'}</div></div><button class="btn ghost" data-edit="${esc(p.dni)}">Editar</button></div>`).join(''):'<div class="empty">Sin personas todavía.</div>')+'</div>';
+  if(hojaUrl) $('#linkHoja').href=hojaUrl;
+}
+$('#buscar').oninput=render;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-dni]'); if(b){ b.disabled=true; procesar({dni:b.dataset.dni}).finally(()=>{b.disabled=false;}); return; }
+  const ed=e.target.closest('[data-edit]'); if(ed){ const p=personas.find(x=>x.dni===ed.dataset.edit); if(p){ $('#pDni').value=p.dni; $('#pNom').value=p.nombre; $('#pTar').value=''; $('#pTar').placeholder=p.tarjeta?'Ya tiene tarjeta (lee otra para cambiar)':'Sin tarjeta'; window.scrollTo({top:0,behavior:'smooth'}); } }
+});
+
+/* ---------- marcar ---------- */
+const res=h=>{$('#res').innerHTML=h;};
+let ocupado=false;
+async function procesar(p){
+  if(ocupado) return; ocupado=true;
+  res('<div class="res wait"><span class="spin"></span>Registrando…</div>');
+  try{
+    const r=await api('marcar',Object.assign({labor:$('#labor').value.trim()||'SALA DE CIERRE',obs:$('#obs').value.trim(),por:cfg.por,refri:cfg.refri,umbral:cfg.umbral},p));
+    if(r.tipo) $('#obs').value='';
+    if(r.noEncontrado) return nuevo(r);
+    if(r.aviso){
+      vibrar([80,60,80]);
+      res(`<div class="res warn"><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><div style="margin-top:8px">⚠ ${esc(r.aviso)} ¿Qué hacemos?</div>
+        <div class="row"><button class="btn ghost" id="avNo">Nada, fue error</button><button class="btn ${r.accion==='salida'?'r':'g'}" id="avSi">Marcar ${r.accion.toUpperCase()}</button></div></div>`);
+      $('#avNo').onclick=()=>res(''); $('#avSi').onclick=()=>{ ocupado=false; procesar(Object.assign({},p,{forzar:true})); };
+      return;
+    }
+    if(r.tipo==='ingreso'){ vibrar(150);
+      res(`<div class="res ing"><div class="big">✔ INGRESO ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><button class="btn wbtn" id="undo">Deshacer</button></div>`);
+    } else { vibrar([150,80,150]);
+      res(`<div class="res sal"><div class="big">✔ SALIDA ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">Entró ${hm(r.ingreso)} · trabajó <b id="netoH">${horasTxt(r.horas)} h</b></div>
+        <div class="dt" id="refTxt">${r.refri?'Refrigerio descontado: '+r.refri+' min':'Sin refrigerio descontado'}</div>
+        <div class="row" style="margin-top:8px;gap:6px">${[0,30,45,60].map(m=>`<button class="btn wbtn" style="margin:0;padding:9px 4px;${m===r.refri?'background:#fff;color:var(--red)':''}" data-ref="${m}">${m?m+' min':'Sin'}</button>`).join('')}</div>
+        <button class="btn wbtn" id="undo">Deshacer</button></div>`);
+      $('#res').querySelectorAll('[data-ref]').forEach(b=>b.onclick=async()=>{
+        const m=Number(b.dataset.ref); $('#refTxt').textContent='Guardando…';
+        try{ const q=await api('refrigerio',{id:r.id,min:m}); r.refri=q.refri;
+          $('#netoH').textContent=horasTxt(q.horas)+' h'; $('#refTxt').textContent=q.refri?'Refrigerio descontado: '+q.refri+' min':'Sin refrigerio descontado';
+          $('#res').querySelectorAll('[data-ref]').forEach(x=>{ const on=Number(x.dataset.ref)===q.refri; x.style.background=on?'#fff':''; x.style.color=on?'var(--red)':''; });
+          refrescar(true);
+        }catch(e){ toast(e.message); $('#refTxt').textContent=''; }
+      });
+    }
+    $('#undo').onclick=async()=>{ try{ await api('deshacer',{id:r.id,tipo:r.tipo}); res('<div class="res warn">'+(r.tipo==='ingreso'?'Ingreso':'Salida')+' de '+esc(r.nombre)+' anulado.</div>'); ultimaTar={s:'',t:0}; refrescar(true);}catch(e){toast(e.message);} };
+    refrescar(true);
+  }catch(e){ res('<div class="res warn">'+esc(e.message)+'</div>'); }
+  finally{ ocupado=false; }
+}
+function nuevo(r){
+  vibrar([60,60,60,60]);
+  const conTar=!!r.tarjeta;
+  res(`<div class="res warn"><div class="nm">${conTar?'Tarjeta nueva':'DNI no registrado'}</div>
+    <div class="dt" style="color:var(--muted)">${conTar?'Escribe el DNI de la persona para asignarle esta tarjeta':'Registra a la persona para marcar su ingreso'}</div>
+    <label>DNI o C.E.</label><input id="nDni" inputmode="numeric" maxlength="9" value="${esc(r.dni||'')}">
+    <label>Nombre y apellido</label><input id="nNom" autocomplete="off">
+    <div class="row" style="margin-top:12px"><button class="btn ghost" id="nNo">Cancelar</button><button class="btn g" id="nSi">Guardar e INGRESO</button></div></div>`);
+  const llenar=()=>{ const p=personas.find(x=>x.dni===$('#nDni').value.replace(/\D/g,'')); if(p&&!$('#nNom').value) $('#nNom').value=p.nombre; };
+  $('#nDni').oninput=llenar; llenar(); (conTar?$('#nDni'):$('#nNom')).focus();
+  $('#nNo').onclick=()=>res('');
+  $('#nSi').onclick=async()=>{
+    const dni=$('#nDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
+    $('#nSi').disabled=true;
+    try{ await api('guardarPersona',{dni,nombre:$('#nNom').value,tarjeta:r.tarjeta||''}); await procesar({dni}); }
+    catch(e){ toast(e.message); $('#nSi').disabled=false; }
+  };
+}
+async function salidaTodos(){
+  if(!window.confirm('¿Marcar SALIDA a las '+abiertas.length+' personas en sala?')) return;
+  try{ const r=await api('salidaTodos',{por:cfg.por,refri:cfg.refri,umbral:cfg.umbral}); toast('Salida '+hm(r.hora)+' marcada a '+r.n+' personas.'); refrescar(true); }catch(e){ toast(e.message); }
+}
+
+/* DNI escrito */
+const dniGo=()=>{ const d=$('#dniIn').value.replace(/\D/g,''); if(d.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; } $('#dniIn').value=''; $('#dniIn').blur(); procesar({dni:d}); };
+$('#dniGo').onclick=dniGo; $('#dniIn').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); dniGo(); } };
+
+/* ---------- NFC del celular ---------- */
+let lector=null, ultimaTar={s:'',t:0}, modoAsignar=false;
+const pillNfc=(txt,tipo)=>{ const p=$('#pillNfc'); p.className='pill show '+tipo; p.innerHTML=txt; };
+async function iniciarNfc(auto){
+  if(!('NDEFReader' in window)){ if(!auto) pillNfc('Este celular no permite NFC desde la app. Abre la app con <b>Chrome</b> en Android y revisa que el NFC esté encendido.','warn'); return; }
+  if(lector) return;
+  try{
+    if(auto){ const st=await navigator.permissions.query({name:'nfc'}).catch(()=>null); if(!st||st.state!=='granted') return; }
+    lector=new NDEFReader(); const ctl=new AbortController();
+    await lector.scan({signal:ctl.signal});
+    lector._ctl=ctl;
+    lector.onreading=e=>leida(e.serialNumber);
+    lector.onreadingerror=()=>{ vibrar([200]); toast('No se pudo leer esa tarjeta por NFC. Usa la foto del DNI o escríbelo.'); };
+    ls.set('nfc','1'); $('#bNfc').classList.add('on');
+    pillNfc('📶 NFC activo: acerca la tarjeta a la parte de atrás del celular.','ok');
+  }catch(e){
+    lector=null;
+    if(e.name==='NotAllowedError') pillNfc('Permiso de NFC negado. Actívalo en los permisos del sitio en Chrome.','warn');
+    else if(e.name==='NotSupportedError') pillNfc('El NFC está apagado o este celular no lo tiene. Enciéndelo en Ajustes del celular.','warn');
+    else pillNfc('No se pudo iniciar el NFC: '+esc(e.message),'warn');
+  }
+}
+function leida(serial){
+  const s=String(serial||'').toUpperCase().replace(/[^0-9A-Z]/g,'');
+  if(!s){ toast('La tarjeta no tiene número de serie legible. Usa la foto o el DNI.'); return; }
+  if(modoAsignar){ modoAsignar=false; $('#pTar').value=s; $('#pLeer').textContent='📶 Leer'; vibrar(120); toast('Tarjeta leída ✔'); return; }
+  const now=Date.now(); if(s===ultimaTar.s && now-ultimaTar.t<6000) return; ultimaTar={s,t:now};
+  document.querySelector('nav button[data-tab="marcar"]').click();
+  procesar({tarjeta:s});
+}
+$('#bNfc').onclick=()=>iniciarNfc(false);
+$('#pLeer').onclick=async()=>{ await iniciarNfc(false); if(!lector) return; modoAsignar=true; $('#pLeer').textContent='Acerca…'; toast('Acerca la tarjeta al celular'); };
+if(ls.get('nfc','')==='1') iniciarNfc(true);
+
+/* ---------- Foto del DNI (lectura en el mismo celular) ---------- */
+let tess=null;
+function cargarTess(){ if(tess) return tess; tess=new Promise((ok,no)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; s.onload=()=>ok(window.Tesseract); s.onerror=()=>{tess=null;no(new Error('No se pudo cargar el lector de fotos. Revisa la señal.'));}; document.head.appendChild(s); }); return tess; }
+$('#fotoIn').onchange=async()=>{
+  const f=$('#fotoIn').files[0]; $('#fotoIn').value=''; if(!f) return;
+  res('<div class="res wait"><span class="spin"></span>Leyendo el DNI de la foto… <span id="pct"></span></div>');
+  try{
+    const T=await cargarTess();
+    const {data}=await T.recognize(f,'eng',{logger:m=>{ if(m.status==='recognizing text'&&$('#pct')) $('#pct').textContent=Math.round(m.progress*100)+'%'; }});
+    const txt=(data.text||'').replace(/[Oo]/g,'0').replace(/[Il|]/g,'1');
+    const cands=[...new Set((txt.match(/(?<!\d)\d{8,9}(?!\d)/g)||[]))];
+    const conocidos=cands.filter(c=>personas.some(p=>p.dni===c));
+    if(conocidos.length===1 || cands.length===1) return procesar({dni:conocidos[0]||cands[0]});
+    if(!cands.length){ res('<div class="res warn">No encontré el DNI en la foto. Toma la foto más cerca, con buena luz y sin reflejo, o escribe el DNI.</div>'); return; }
+    res('<div class="res warn"><div class="nm">¿Cuál es el DNI?</div>'+cands.slice(0,5).map(c=>`<button class="btn ghost full" style="margin-top:8px" data-c="${c}">${c}</button>`).join('')+'</div>');
+    $('#res').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>procesar({dni:b.dataset.c}));
+  }catch(e){ res('<div class="res warn">'+esc(e.message||'No se pudo leer la foto.')+'</div>'); }
+};
+
+/* ---------- personal ---------- */
+$('#pGuardar').onclick=async()=>{
+  const dni=$('#pDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
+  $('#pGuardar').disabled=true;
+  try{ const r=await api('guardarPersona',{dni,nombre:$('#pNom').value,tarjeta:$('#pTar').value}); toast((r.nueva?'Agregado: ':'Actualizado: ')+r.persona.nombre); $('#pDni').value='';$('#pNom').value='';$('#pTar').value=''; refrescar(true); }
+  catch(e){ toast(e.message); }
+  $('#pGuardar').disabled=false;
+};
+
+/* ---------- ajustes ---------- */
+$('#cGuardar').onclick=async()=>{
+  cfg={url:$('#cUrl').value.trim(),clave:$('#cClave').value.trim(),por:$('#cPor').value.trim(),
+       refri:String(parseInt($('#cRefri').value,10)>=0?parseInt($('#cRefri').value,10):45),umbral:String(parseFloat($('#cUmbral').value)>=0?parseFloat($('#cUmbral').value):6)};
+  ['url','clave','por','refri','umbral'].forEach(k=>ls.set(k,cfg[k])); $('#cRefri').value=cfg.refri; $('#cUmbral').value=cfg.umbral;
+  $('#pillConf').classList.toggle('show',!listo());
+  try{ await api('estado'); toast('Conectado ✔'); refrescar(true); }catch(e){ toast(e.message); }
+};
+$('#cCompartir').onclick=async()=>{
+  if(!listo()){ toast('Primero guarda la URL y la clave.'); return; }
+  const link=location.origin+location.pathname+'?u='+encodeURIComponent(cfg.url)+'&k='+encodeURIComponent(cfg.clave)+'&r='+encodeURIComponent(cfg.refri)+'&h='+encodeURIComponent(cfg.umbral);
+  const texto='App Destajeros – Sala de cierre. Ábrela con Chrome y toca "Instalar": ';
+  try{ if(navigator.share){ await navigator.share({title:'App Destajeros',text:texto,url:link}); return; } }catch(e){ if(e.name==='AbortError') return; }
+  try{ await navigator.clipboard.writeText(texto+link); toast('Link copiado. Pégalo en WhatsApp.'); }catch(e){ window.prompt('Copia este link:',link); }
+};
+let promptInstalar=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); promptInstalar=e; $('#cardInstalar').hidden=false; });
+$('#bInstalar').onclick=async()=>{ if(!promptInstalar) return; promptInstalar.prompt(); await promptInstalar.userChoice; promptInstalar=null; $('#cardInstalar').hidden=true; };
+
+/* pestañas */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['marcar','personal','ajustes'].forEach(t=>$('#t-'+t).hidden=t!==b.dataset.tab);
+});
+if(!listo()) document.querySelector('nav button[data-tab="ajustes"]').click();
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+refrescar();
+</script>
+</body>
+</html>
