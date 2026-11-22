@@ -73,12 +73,14 @@
   .scanres{position:absolute;left:12px;right:12px;top:calc(14px + env(safe-area-inset-top))}
   .scanbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.75))}
   .scanbar .btn{flex:1;padding:13px 6px}
+  .item.rf{background:#e6eef7}.stats.s5 b{font-size:19px}.stats.s5 span{font-size:11px}.stats.s5{gap:5px}.stats.s5 div{padding:6px 2px}
+  .cola{font-size:12px;background:#ffffff22;border-radius:8px;padding:2px 8px;margin-left:6px}
   .ver{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}
 </style>
 </head>
 <body>
 <header>
-  <h1>ASISTENCIA CIERRE CAC</h1>
+  <h1>ASISTENCIA CIERRE CAC <span class="cola" id="colaBadge" hidden></span></h1>
   <div class="sub" id="hoy"></div>
   <nav>
     <button data-tab="destajo" class="on">Destajeros</button>
@@ -123,18 +125,23 @@
         <input type="date" id="jFecha">
         <button class="btn ghost sm" id="jNext" style="flex:0 0 46px">›</button>
       </div>
-      <label>Hora a registrar</label>
-      <div class="row">
-        <input type="time" id="jHora">
+      <div class="row" style="margin-top:8px">
+        <input type="time" id="jHora" aria-label="Hora a registrar">
         <button class="btn ghost sm" id="jAhora" style="flex:0 0 96px">Ahora</button>
       </div>
-      <div class="hint" style="margin-top:6px" id="jHoraTxt">Vacío = hora actual. Pon una hora si llegaron antes que el supervisor.</div>
+      <div class="hint" style="margin-top:6px" id="jHoraTxt">Hora vacía = hora actual. Pon una hora si llegaron antes que el supervisor.</div>
     </div>
-    <div class="stats"><div><b id="jPres">0</b><span>En sala</span></div><div><b id="jSal">0</b><span>Salieron</span></div><div><b id="jFal">0</b><span>Faltan</span></div></div>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn g" id="jScan" style="flex:0 0 58%;padding:16px 8px;font-size:16px">📷 Escanear tarjeta</button>
+      <input id="jDni" inputmode="numeric" maxlength="9" placeholder="DNI" autocomplete="off" style="text-align:center;font-size:18px">
+      <button class="btn g" id="jDniGo" style="flex:0 0 54px">OK</button>
+    </div>
+    <div id="jRes"></div>
+    <div class="stats s5"><div><b id="jPres">0</b><span>En sala</span></div><div><b id="jRef">0</b><span>Refrigerio</span></div><div><b id="jSal">0</b><span>Salieron</span></div><div><b id="jAus">0</b><span>Ausentes</span></div><div><b id="jFal">0</b><span>Sin marcar</span></div></div>
     <input id="jBuscar" placeholder="🔍 Buscar" autocomplete="off" style="margin-bottom:8px">
     <div id="jLista"></div>
     <div style="margin-top:10px" class="row">
-      <button class="btn g" id="jTodosIn">Ingreso a los que faltan</button>
+      <button class="btn g" id="jTodosIn">Ingreso a los sin marcar</button>
       <button class="btn r" id="jTodosOut">Salida a todos</button>
     </div>
   </section>
@@ -175,6 +182,13 @@
       <button class="btn g full" id="cGuardar">Guardar</button>
     </div>
     <div class="card">
+      <b>Reglas de jornales (para el reporte)</b>
+      <div class="row"><div><label>Tardanza después de</label><input type="time" id="cLimite"></div><div><label>Refrigerio máximo (min)</label><input id="cRefMax" inputmode="numeric"></div></div>
+      <div class="row"><div><label>Permiso si ingresa después de</label><input type="time" id="cPermIn"></div><div><label>o sale antes de (L–V)</label><input type="time" id="cPermOut"></div></div>
+      <div style="height:12px"></div>
+      <button class="btn g full" id="cGuardarReglas">Guardar reglas</button>
+    </div>
+    <div class="card">
       <b>Compartir con supervisores</b>
       <div class="hint">Envía este link por WhatsApp. Al abrirlo con Chrome la app queda lista.</div>
       <div style="height:10px"></div>
@@ -187,7 +201,7 @@
       <label>URL</label><input id="cUrl" autocomplete="off"><label>Clave</label><input id="cClave" autocomplete="off">
       <div style="height:10px"></div><button class="btn full" id="cConectar">Conectar</button>
     </div>
-    <div class="ver" id="ver">ASISTENCIA CIERRE CAC · v4</div>
+    <div class="ver" id="ver">ASISTENCIA CIERRE CAC · v5</div>
   </section>
 </main>
 
@@ -226,7 +240,8 @@ $('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') cerrarModal(
 function confirmar(titulo,texto,ok,cls){ return new Promise(r=>{ modal(`<h2>${esc(titulo)}</h2><div class="hint">${esc(texto)}</div><div class="actions"><button class="btn ghost" id="cfNo">Cancelar</button><button class="btn ${cls||'g'}" id="cfSi">${esc(ok)}</button></div>`); $('#cfNo').onclick=()=>{cerrarModal();r(false);}; $('#cfSi').onclick=()=>{cerrarModal();r(true);}; }); }
 
 /* ---------- configuración ---------- */
-let cfg={url:ls.get('url',''),clave:ls.get('clave',''),por:ls.get('por',''),refri:ls.get('refri','45'),umbral:ls.get('umbral','6')};
+let cfg={url:ls.get('url',''),clave:ls.get('clave',''),por:ls.get('por',''),refri:ls.get('refri','45'),umbral:ls.get('umbral','6'),
+  limite:ls.get('limite','06:20'),refMax:ls.get('refMax','60'),permIn:ls.get('permIn','07:00'),permOut:ls.get('permOut','15:00')};
 (function(){ const q=new URLSearchParams(location.search);
   if(q.get('u')){ cfg.url=q.get('u'); cfg.clave=q.get('k')||''; ls.set('url',cfg.url); ls.set('clave',cfg.clave);
     if(q.get('r')){cfg.refri=q.get('r');ls.set('refri',cfg.refri);} if(q.get('h')){cfg.umbral=q.get('h');ls.set('umbral',cfg.umbral);}
@@ -234,26 +249,34 @@ let cfg={url:ls.get('url',''),clave:ls.get('clave',''),por:ls.get('por',''),refr
 const listo=()=>!!(cfg.url&&cfg.clave);
 $('#pillConf').classList.toggle('show',!listo());
 $('#cPor').value=cfg.por; $('#cRefri').value=cfg.refri; $('#cUmbral').value=cfg.umbral; $('#cUrl').value=cfg.url; $('#cClave').value=cfg.clave;
+$('#cLimite').value=cfg.limite; $('#cRefMax').value=cfg.refMax; $('#cPermIn').value=cfg.permIn; $('#cPermOut').value=cfg.permOut;
 $('#labor').value=ls.get('labor',''); const laborTxt=()=>{ $('#laborTxt').textContent=$('#labor').value.trim()||'SALA DE CIERRE'; }; laborTxt();
 $('#labor').addEventListener('input',()=>{ ls.set('labor',$('#labor').value.trim()); laborTxt(); });
+const uid=()=>Math.random().toString(16).slice(2,10);
 
 async function api(accion,datos){
   if(!listo()) throw new Error('La app no está conectada. Ábrela con el link de configuración.');
   let r; try{ r=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({clave:cfg.clave,accion,por:cfg.por,refri:cfg.refri,umbral:cfg.umbral},datos||{}))}); }
-  catch(e){ throw new Error('Sin conexión. Revisa la señal o el WiFi.'); }
-  let j; try{ j=await r.json(); }catch(e){ throw new Error('El servidor no respondió bien. Intenta otra vez.'); }
+  catch(e){ const x=new Error('Sin señal. La marca quedó guardada y se enviará sola.'); x.red=true; throw x; }
+  let j; try{ j=await r.json(); }catch(e){ const x=new Error('El servidor no respondió bien.'); x.red=true; throw x; }
   if(!j.ok) throw new Error(j.error||'Error'); return j;
 }
 
 /* ---------- datos en memoria + caché local (abre al instante) ---------- */
-const S={ destajo:{lista:[],mapa:new Map(),bv:'',abiertas:[],ultimas:[]}, jornal:{lista:[],mapa:new Map(),bv:'',abiertas:[],ultimas:[],delDia:[]} };
+const S={ destajo:{lista:[],mapa:new Map(),bv:'',abiertas:[],ultimas:[]}, jornal:{lista:[],mapa:new Map(),bv:'',abiertas:[],ultimas:[],delDia:[],dia:''} };
 let hojaUrl=ls.get('hoja','');
 function ponerBase(t,b){ const s=S[t]; s.bv=b.v; s.lista=b.lista.map(x=>({dni:x[0],nombre:x[1],cargo:x[2]||''})); s.mapa=new Map(s.lista.map(p=>[p.dni,p])); }
 ['destajo','jornal'].forEach(t=>{ try{ const c=JSON.parse(ls.get('base_'+t,'null')); if(c) ponerBase(t,c); }catch(e){} });
+try{ const c=JSON.parse(ls.get('est_destajo','null')); if(c){ S.destajo.abiertas=c.abiertas||[]; S.destajo.ultimas=c.ultimas||[]; } }catch(e){}
+try{ const c=JSON.parse(ls.get('est_jornal','null')); if(c && c.dia===ymd(new Date())){ S.jornal.delDia=c.delDia||[]; S.jornal.abiertas=c.abiertas||[]; S.jornal.dia=c.dia; } }catch(e){}
 function aplicar(t,e){
   if(!e) return; const s=S[t];
   if(e.base){ ponerBase(t,e.base); ls.set('base_'+t,JSON.stringify(e.base)); }
-  if(e.abiertas) s.abiertas=e.abiertas; if(e.ultimas) s.ultimas=e.ultimas; if(e.delDia) s.delDia=e.delDia;
+  if(!cola.some(o=>o.datos.tipo===t)){   // si hay marcas por enviar, se mantiene lo que ya se ve en pantalla
+    if(e.abiertas) s.abiertas=e.abiertas; if(e.ultimas) s.ultimas=e.ultimas;
+    if(e.delDia){ s.delDia=e.delDia; s.dia=jFecha(); }
+    ls.set('est_'+t,JSON.stringify(t==='jornal'?{delDia:s.delDia,abiertas:s.abiertas,dia:s.dia}:{abiertas:s.abiertas,ultimas:s.ultimas}));
+  }
   if(e.hoja){ hojaUrl=e.hoja; ls.set('hoja',hojaUrl); }
   render();
 }
@@ -262,8 +285,39 @@ async function refrescar(t,silencio){
   t=t||(tab==='jornal'?'jornal':'destajo'); if(!listo()) return render();
   try{ aplicar(t, await api('estado',{tipo:t,bv:S[t].bv,fecha:t==='jornal'?jFecha():undefined})); }catch(e){ if(!silencio) toast(e.message); }
 }
-setInterval(()=>{ if(document.visibilityState==='visible' && (tab==='destajo'||tab==='jornal')) refrescar(tab,true); },30000);
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') refrescar(null,true); else cerrarScanner(); });
+setInterval(()=>{ if(document.visibilityState==='visible' && (tab==='destajo'||tab==='jornal') && !cola.length) refrescar(tab,true); },30000);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ refrescar(null,true); procesarCola(); } else cerrarScanner(); });
+
+/* ---------- COLA: las marcas se ven al instante y se envían en segundo plano ---------- */
+let cola=[]; try{ cola=JSON.parse(ls.get('cola','[]')); }catch(e){ cola=[]; }
+let enviando=false;
+const guardarCola=()=>{ ls.set('cola',JSON.stringify(cola)); pintarCola(); };
+function pintarCola(){ const b=$('#colaBadge'); if(!b) return; b.hidden=!cola.length; b.textContent='⏳ '+cola.length+' por enviar'; }
+function encolar(accion,datos,info){ cola.push({k:uid(),accion,datos,info:info||{}}); guardarCola(); procesarCola(); }
+async function procesarCola(){
+  if(enviando||!cola.length) return; enviando=true;
+  while(cola.length){
+    const op=cola[0];
+    try{ const r=await api(op.accion,op.datos); cola.shift(); guardarCola(); alTerminar(op,r); }
+    catch(e){ if(e.red){ setTimeout(()=>{ enviando=false; procesarCola(); },6000); pintarCola(); return; } cola.shift(); guardarCola(); avisoCola(op,e.message); }
+  }
+  enviando=false;
+}
+function alTerminar(op,r){
+  const t=op.datos.tipo;
+  if(r.aviso){ avisoCola(op,r.aviso,r.accion?()=>encolar(op.accion,Object.assign({},op.datos,{forzar:true}),op.info):null); }
+  if(r.estado) aplicar(t,r.estado); else if(!cola.some(o=>o.datos.tipo===t)) refrescar(t,true);
+}
+function avisoCola(op,msg,reintentar){
+  vibrar([80,60,80]);
+  const caja=op.datos.tipo==='jornal'?'#jRes':'#res';
+  $(caja).innerHTML=`<div class="res warn"><div class="nm">${esc(op.info.nombre||op.datos.dni||'')}</div><div style="margin-top:6px">⚠ ${esc(msg)}</div>
+    <div class="row">${reintentar?'<button class="btn g" id="cqSi">Marcar igual</button>':''}<button class="btn ghost" id="cqNo">Entendido</button></div></div>`;
+  if(reintentar) $('#cqSi').onclick=()=>{ $(caja).innerHTML=''; reintentar(); };
+  $('#cqNo').onclick=()=>{ $(caja).innerHTML=''; refrescar(op.datos.tipo,true); };
+}
+function quitarDeCola(pred){ const n=cola.length; cola=cola.filter((o,i)=>!(i>0||!enviando)||!pred(o)); if(cola.length!==n){ guardarCola(); return true; } return false; }
+setTimeout(procesarCola,500); pintarCola();
 
 /* ---------- pestañas ---------- */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
@@ -283,42 +337,72 @@ function renderDestajo(){
     <button class="btn r act sm" data-sal="${esc(a.dni)}">SALIDA</button></div>`).join(''):'<div class="empty">Nadie en sala.</div>')+'</div>';
   $('#zonaTodos').innerHTML=s.abiertas.length>1?'<button class="btn r full" id="bTodos">Marcar SALIDA a todos ('+s.abiertas.length+')</button>':'';
   if($('#bTodos')) $('#bTodos').onclick=()=>salidaTodos('destajo');
-  $('#ultimas').innerHTML='<div class="list">'+(s.ultimas.length?s.ultimas.map(e=>`<div class="item ${e.tipo==='Ingreso'?'in':''}"><div class="who"><div class="name">${esc(e.n)}</div><div class="meta">${e.tipo} ${hm(e.t)}${e.h!=null?' · '+horasTxt(e.h)+' h':''}</div></div></div>`).join(''):'<div class="empty">Aún no hay marcas hoy.</div>')+'</div>';
+  $('#ultimas').innerHTML='<div class="list">'+(s.ultimas.length?s.ultimas.slice(0,8).map(e=>`<div class="item ${e.tipo==='Ingreso'?'in':''}"><div class="who"><div class="name">${esc(e.n)}</div><div class="meta">${e.tipo} ${hm(e.t)}${e.h!=null?' · '+horasTxt(e.h)+' h':''}</div></div></div>`).join(''):'<div class="empty">Aún no hay marcas hoy.</div>')+'</div>';
 }
-document.addEventListener('click',e=>{ const b=e.target.closest('[data-sal]'); if(b){ b.disabled=true; procesar({dni:b.dataset.sal}).finally(()=>{b.disabled=false;}); } });
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-sal]'); if(b) procesar({dni:b.dataset.sal}); });
 
-/* ---------- DESTAJEROS: marcar ---------- */
+/* ---------- DESTAJEROS: marcar (instantáneo) ---------- */
 const res=h=>{$('#res').innerHTML=h;};
 let ocupado=false;
-async function procesar(p){
+const refriLocal=(hi,hf)=>((hf-hi)/36e5>Number(cfg.umbral)?Number(cfg.refri):0);
+// Marca al instante en pantalla y envía en segundo plano. Devuelve {tipo,nombre,hora,...} o null si necesita respuesta del servidor.
+function marcarRapido(t,dni,extra){
+  const s=S[t], p=s.mapa.get(dni); if(!p) return null;
+  const now=Date.now(), forzar=extra&&extra.forzar;
+  const ab=s.abiertas.find(a=>a.dni===dni);
+  if(ab){
+    if(!forzar && now-ab.hi<120000) return {aviso:'Ingresó hace '+Math.max(1,Math.round((now-ab.hi)/60000))+' min.',accion:'salida',nombre:p.nombre,dni};
+    const refri=refriLocal(ab.hi,now), horas=Math.max(0,Math.round((now-ab.hi)/6e4-refri))/60;
+    s.abiertas=s.abiertas.filter(a=>a!==ab); s.ultimas.unshift({n:p.nombre,t:now,tipo:'Salida',h:horas});
+    encolar('marcar',Object.assign({tipo:t,dni,ts:now,forzar:true,conEstado:true,bv:s.bv},extra||{}),{nombre:p.nombre});
+    render(); return {tipo:'salida',nombre:p.nombre,dni,hora:now,ingreso:ab.hi,horas,refri,id:ab.id};
+  }
+  const ult=s.ultimas.find(u=>u.n===p.nombre&&u.tipo==='Salida');
+  if(!forzar && ult && now-ult.t<120000) return {aviso:'Marcó salida hace '+Math.max(1,Math.round((now-ult.t)/60000))+' min.',accion:'ingreso',nombre:p.nombre,dni};
+  const id=uid();
+  s.abiertas.push({id,dni,nombre:p.nombre,hi:now}); s.ultimas.unshift({n:p.nombre,t:now,tipo:'Ingreso'});
+  encolar('marcar',Object.assign({tipo:t,dni,ts:now,id,conEstado:true,bv:s.bv,solo:'ingreso'},extra||{}),{nombre:p.nombre});
+  render(); return {tipo:'ingreso',nombre:p.nombre,dni,hora:now,id};
+}
+function procesar(p){
+  const extra={labor:$('#labor').value.trim()||'SALA DE CIERRE',obs:$('#obs').value.trim(),forzar:p.forzar};
+  const r=marcarRapido('destajo',p.dni,extra);
+  if(!r) return procesarServidor(p);
+  if(r.aviso){ vibrar([80,60,80]);
+    res(`<div class="res warn"><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><div style="margin-top:8px">⚠ ${esc(r.aviso)} ¿Qué hacemos?</div>
+      <div class="row"><button class="btn ghost" id="avNo">Nada, fue error</button><button class="btn ${r.accion==='salida'?'r':'g'}" id="avSi">Marcar ${r.accion.toUpperCase()}</button></div></div>`);
+    $('#avNo').onclick=()=>res(''); $('#avSi').onclick=()=>procesar(Object.assign({},p,{forzar:true})); return r; }
+  $('#obs').value='';
+  mostrarMarca(r); return r;
+}
+function mostrarMarca(r){
+  if(r.tipo==='ingreso'){ vibrar(150);
+    res(`<div class="res ing"><div class="big">✔ INGRESO ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><button class="btn wbtn" id="undo">Deshacer</button></div>`);
+  } else { vibrar([150,80,150]);
+    res(`<div class="res sal"><div class="big">✔ SALIDA ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">Entró ${hm(r.ingreso)} · trabajó <b id="netoH">${horasTxt(r.horas)} h</b></div>
+      <div class="dt" id="refTxt">${r.refri?'Refrigerio descontado: '+r.refri+' min':'Sin refrigerio descontado'}</div>
+      <div class="row" style="margin-top:8px;gap:6px">${[0,30,45,60].map(m=>`<button class="btn wbtn" style="margin:0;padding:9px 4px;${m===r.refri?'background:#fff;color:var(--red)':''}" data-ref="${m}">${m?m+' min':'Sin'}</button>`).join('')}</div>
+      <button class="btn wbtn" id="undo">Deshacer</button></div>`);
+    $('#res').querySelectorAll('[data-ref]').forEach(b=>b.onclick=()=>{
+      const m=Number(b.dataset.ref); r.refri=m; r.horas=Math.max(0,Math.round((r.hora-r.ingreso)/6e4-m))/60;
+      $('#netoH').textContent=horasTxt(r.horas)+' h'; $('#refTxt').textContent=m?'Refrigerio descontado: '+m+' min':'Sin refrigerio descontado';
+      $('#res').querySelectorAll('[data-ref]').forEach(x=>{ const on=Number(x.dataset.ref)===m; x.style.background=on?'#fff':''; x.style.color=on?'var(--red)':''; });
+      if(r.id) encolar('refrigerio',{tipo:'destajo',id:r.id,min:m},{nombre:r.nombre}); });
+  }
+  $('#undo').onclick=()=>{ if(r.id) encolar('deshacer',{tipo:'destajo',id:r.id,tipoMarca:r.tipo,bv:S.destajo.bv},{nombre:r.nombre});
+    const s=S.destajo; if(r.tipo==='ingreso') s.abiertas=s.abiertas.filter(a=>a.id!==r.id); else s.abiertas.push({id:r.id,dni:r.dni,nombre:r.nombre,hi:r.ingreso});
+    s.ultimas=s.ultimas.filter(u=>!(u.n===r.nombre&&u.t===r.hora)); render();
+    res('<div class="res warn">'+(r.tipo==='ingreso'?'Ingreso':'Salida')+' de '+esc(r.nombre)+' anulado.</div>'); ultimoCod={c:'',t:0}; };
+}
+// DNI que no está en la base: se pregunta al servidor y se registra
+async function procesarServidor(p){
   if(ocupado) return; ocupado=true;
-  const conocido=S.destajo.mapa.get(p.dni);
-  res('<div class="res wait"><span class="spin"></span>Registrando '+(conocido?'<b>'+esc(conocido.nombre)+'</b>':'DNI '+esc(p.dni))+'…</div>');
+  res('<div class="res wait"><span class="spin"></span>Buscando DNI '+esc(p.dni)+'…</div>');
   try{
-    const r=await api('marcar',Object.assign({tipo:'destajo',labor:$('#labor').value.trim()||'SALA DE CIERRE',obs:$('#obs').value.trim(),conEstado:true,bv:S.destajo.bv},p));
+    const r=await api('marcar',{tipo:'destajo',dni:p.dni,ts:Date.now(),labor:$('#labor').value.trim()||'SALA DE CIERRE',conEstado:true,bv:S.destajo.bv});
     if(r.estado) aplicar('destajo',r.estado);
-    if(r.tipo) $('#obs').value='';
     if(r.noEncontrado){ nuevoDestajero(r); return r; }
-    if(r.aviso){ vibrar([80,60,80]);
-      res(`<div class="res warn"><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><div style="margin-top:8px">⚠ ${esc(r.aviso)} ¿Qué hacemos?</div>
-        <div class="row"><button class="btn ghost" id="avNo">Nada, fue error</button>${r.accion?`<button class="btn ${r.accion==='salida'?'r':'g'}" id="avSi">Marcar ${r.accion.toUpperCase()}</button>`:''}</div></div>`);
-      $('#avNo').onclick=()=>res(''); if($('#avSi')) $('#avSi').onclick=()=>{ ocupado=false; procesar(Object.assign({},p,{forzar:true})); };
-      return r; }
-    if(r.tipo==='ingreso'){ vibrar(150);
-      res(`<div class="res ing"><div class="big">✔ INGRESO ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><button class="btn wbtn" id="undo">Deshacer</button></div>`);
-    } else { vibrar([150,80,150]);
-      res(`<div class="res sal"><div class="big">✔ SALIDA ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">Entró ${hm(r.ingreso)} · trabajó <b id="netoH">${horasTxt(r.horas)} h</b></div>
-        <div class="dt" id="refTxt">${r.refri?'Refrigerio descontado: '+r.refri+' min':'Sin refrigerio descontado'}</div>
-        <div class="row" style="margin-top:8px;gap:6px">${[0,30,45,60].map(m=>`<button class="btn wbtn" style="margin:0;padding:9px 4px;${m===r.refri?'background:#fff;color:var(--red)':''}" data-ref="${m}">${m?m+' min':'Sin'}</button>`).join('')}</div>
-        <button class="btn wbtn" id="undo">Deshacer</button></div>`);
-      $('#res').querySelectorAll('[data-ref]').forEach(b=>b.onclick=async()=>{
-        $('#refTxt').textContent='Guardando…';
-        try{ const q=await api('refrigerio',{tipo:'destajo',id:r.id,min:Number(b.dataset.ref)}); r.refri=q.refri; $('#netoH').textContent=horasTxt(q.horas)+' h';
-          $('#refTxt').textContent=q.refri?'Refrigerio descontado: '+q.refri+' min':'Sin refrigerio descontado';
-          $('#res').querySelectorAll('[data-ref]').forEach(x=>{ const on=Number(x.dataset.ref)===q.refri; x.style.background=on?'#fff':''; x.style.color=on?'var(--red)':''; }); refrescar('destajo',true);
-        }catch(e){ toast(e.message); } });
-    }
-    $('#undo').onclick=async()=>{ try{ const q=await api('deshacer',{tipo:'destajo',id:r.id,tipoMarca:r.tipo,bv:S.destajo.bv}); aplicar('destajo',q.estado); res('<div class="res warn">'+(r.tipo==='ingreso'?'Ingreso':'Salida')+' de '+esc(r.nombre)+' anulado.</div>'); ultimoCod={c:'',t:0}; }catch(e){toast(e.message);} };
+    if(r.tipo){ r.id=r.id; mostrarMarca(r); } else if(r.aviso) res('<div class="res warn">'+esc(r.nombre+': '+r.aviso)+'</div>');
     return r;
   }catch(e){ res('<div class="res warn">'+esc(e.message)+'</div>'); return {error:e.message}; }
   finally{ ocupado=false; }
@@ -331,76 +415,138 @@ function nuevoDestajero(r){
     <div class="row" style="margin-top:12px"><button class="btn ghost" id="nNo">Cancelar</button><button class="btn g" id="nSi">Guardar e INGRESO</button></div></div>`);
   $('#nNom').focus(); $('#nNo').onclick=()=>res('');
   $('#nSi').onclick=async()=>{ const dni=$('#nDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
-    $('#nSi').disabled=true; try{ const q=await api('guardarPersona',{tipo:'destajo',dni,nombre:$('#nNom').value}); aplicar('destajo',{base:q.base}); await procesar({dni}); }catch(e){ toast(e.message); $('#nSi').disabled=false; } };
+    $('#nSi').disabled=true; try{ const q=await api('guardarPersona',{tipo:'destajo',dni,nombre:$('#nNom').value}); aplicar('destajo',{base:q.base}); procesar({dni}); }catch(e){ toast(e.message); $('#nSi').disabled=false; } };
 }
 async function salidaTodos(t){
   const n=S[t].abiertas.length;
   const hora=t==='jornal'?$('#jHora').value:'';
   if(!await confirmar('¿Salida a todos?', 'Se marcará la salida'+(hora?' a las '+hora:' ahora')+' a '+n+' personas en sala.', 'Sí, marcar salida','r')) return;
-  try{ const r=await api('salidaTodos',{tipo:t,hora,fecha:t==='jornal'?jFecha():undefined,bv:S[t].bv}); aplicar(t,r.estado); toast('Salida '+hm(r.hora)+' marcada a '+r.n+' personas.'); }catch(e){ toast(e.message); }
+  try{ const r=await api('salidaTodos',{tipo:t,hora,ts:hora?undefined:Date.now(),fecha:t==='jornal'?jFecha():undefined,bv:S[t].bv}); aplicar(t,r.estado); toast('Salida '+hm(r.hora)+' marcada a '+r.n+' personas.'); }catch(e){ toast(e.message); }
 }
-const dniGo=()=>{ const d=$('#dniIn').value.replace(/\D/g,''); if(d.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; } $('#dniIn').value=''; $('#dniIn').blur(); procesar({dni:d}); };
+const dniGo=()=>{ const d=$('#dniIn').value.replace(/\D/g,''); if(d.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; } $('#dniIn').value=''; procesar({dni:d}); };
 $('#dniGo').onclick=dniGo; $('#dniIn').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); dniGo(); } };
 
 /* ---------- JORNALES ---------- */
-const jFecha=()=>$('#jFecha').value||ymd(new Date());
+const jFecha=()=>($('#jFecha')&&$('#jFecha').value)||ymd(new Date());
 $('#jFecha').value=ymd(new Date());
+const esHoyJ=()=>jFecha()===ymd(new Date());
 const jMover=n=>{ const d=new Date(jFecha()+'T12:00'); d.setDate(d.getDate()+n); $('#jFecha').value=ymd(d); jCambioFecha(); };
-function jCambioFecha(){ const hoy=jFecha()===ymd(new Date()); $('#jHoraTxt').textContent=hoy?'Vacío = hora actual. Pon una hora si llegaron antes que el supervisor.':'Día pasado: indica la hora para cada marca.'; S.jornal.delDia=[]; renderJornal(); refrescar('jornal'); }
+function jCambioFecha(){ $('#jHoraTxt').textContent=esHoyJ()?'Hora vacía = hora actual. Pon una hora si llegaron antes que el supervisor.':'Día pasado: indica la hora para cada marca.'; S.jornal.delDia=[]; renderJornal(); refrescar('jornal'); }
 $('#jPrev').onclick=()=>jMover(-1); $('#jNext').onclick=()=>jMover(1); $('#jFecha').onchange=jCambioFecha;
 $('#jAhora').onclick=()=>{ $('#jHora').value=''; toast('Se usará la hora actual'); };
 $('#jBuscar').oninput=renderJornal;
-function estadoJ(){ // por DNI: el último registro del día elegido
-  const m=new Map(); [...S.jornal.delDia].sort((a,b)=>a.hi-b.hi).forEach(x=>m.set(x.dni,x)); return m; }
+const AUS={'VACACIONES':'Vacaciones','LICENCIA':'Licencia','PERMISO':'Permiso','FALTA JUSTIFICADA':'Falta justificada','FALTA INJUSTIFICADA':'Falta injustificada'};
+function estadoJ(){ const m=new Map(); [...S.jornal.delDia].sort((a,b)=>(a.hi||0)-(b.hi||0)).forEach(x=>m.set(x.dni,x)); return m; }
+function situacion(x){ if(!x) return 'falta'; if(!x.hi) return x.estado==='ASISTIÓ'?'asistio':'ausente'; if(x.hf) return 'salio'; if(typeof x.rd==='number') return 'refri'; return 'dentro'; }
 function renderJornal(){
-  const s=S.jornal, m=estadoJ(), q=$('#jBuscar').value.trim().toLowerCase();
-  let pres=0,sal=0,fal=0;
-  const filas=s.lista.map(p=>{ const x=m.get(p.dni); const st=!x?'falta':(x.hf?'salio':'dentro'); if(st==='falta')fal++; else if(st==='dentro')pres++; else sal++; return {p,x,st}; });
-  $('#jPres').textContent=pres; $('#jSal').textContent=sal; $('#jFal').textContent=fal;
-  const orden={dentro:0,falta:1,salio:2};
+  const s=S.jornal, m=estadoJ(), q=$('#jBuscar').value.trim().toLowerCase(), c={dentro:0,refri:0,salio:0,ausente:0,falta:0,asistio:0};
+  const filas=s.lista.map(p=>{ const x=m.get(p.dni), st=situacion(x); c[st]++; return {p,x,st}; });
+  $('#jPres').textContent=c.dentro; $('#jRef').textContent=c.refri; $('#jSal').textContent=c.salio+c.asistio; $('#jAus').textContent=c.ausente; $('#jFal').textContent=c.falta;
+  const orden={falta:0,dentro:1,refri:2,salio:3,asistio:3,ausente:4};
   const vis=filas.filter(f=>!q||f.p.nombre.toLowerCase().includes(q)||f.p.dni.includes(q)).sort((a,b)=>orden[a.st]-orden[b.st]||a.p.nombre.localeCompare(b.p.nombre,'es'));
+  const meta=(p,x,st)=>{
+    if(st==='falta') return '<span style="color:var(--amber)">Sin marcar</span> · '+esc(p.cargo);
+    if(st==='ausente') return '<b style="color:var(--blue)">'+esc(AUS[x.estado]||x.estado)+'</b>'+(x.obs?' · '+esc(x.obs):'');
+    if(st==='asistio') return 'Asistió (sin hora registrada)';
+    const per=x.permiso?' · <b style="color:var(--amber)">permiso</b>':'';
+    if(st==='refri') return 'En refrigerio desde '+hm(x.rd)+(x.refri?' · ya usó '+x.refri+' min':'')+per;
+    if(st==='dentro') return 'Entró '+hm(x.hi)+' · lleva '+dur(Date.now()-x.hi)+' h'+(x.refri?' · refrigerio '+x.refri+' min':'')+per;
+    return hm(x.hi)+' – '+hm(x.hf)+' · <b>'+horasTxt(x.horas)+' h</b>'+(x.refri?' · ref. '+x.refri+' min':'')+per;
+  };
   $('#jLista').innerHTML='<div class="list">'+(vis.length?vis.map(({p,x,st})=>`
-    <div class="item ${st==='dentro'?'in':st==='salio'?'out':''}"><div class="who"><div class="name">${esc(p.nombre)}</div>
-      <div class="meta">${st==='falta'?(esc(p.cargo)||'Sin marcar'):st==='dentro'?'Entró '+hm(x.hi)+' · lleva '+dur(Date.now()-x.hi)+' h':'Entró '+hm(x.hi)+' · Salió '+hm(x.hf)+' · <b>'+horasTxt(x.horas)+' h</b>'}</div></div>
-      ${st==='falta'?`<button class="btn g act sm" data-jin="${esc(p.dni)}">INGRESO</button>`:st==='dentro'?`<button class="btn r act sm" data-jout="${esc(p.dni)}">SALIDA</button>`:''}
-      ${x?`<button class="edit" data-jed="${esc(x.id)}" aria-label="Editar horas">✏️</button>`:''}</div>`).join(''):'<div class="empty">'+(s.lista.length?'Nadie con ese nombre.':'Aún no hay jornales cargados en DATA PERSONAL.')+'</div>')+'</div>';
+    <div class="item ${st==='dentro'?'in':st==='refri'?'rf':st==='falta'?'':'out'}"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">${meta(p,x,st)}</div></div>
+      ${st==='falta'?`<button class="btn ghost sm" data-jaus="${esc(p.dni)}">Ausente</button><button class="btn g act sm" data-jin="${esc(p.dni)}">INGRESO</button>`:''}
+      ${st==='dentro'?`<button class="edit" data-jri="${esc(p.dni)}" aria-label="Sale a refrigerio">🍽</button><button class="btn r act sm" data-jout="${esc(p.dni)}">SALIDA</button>`:''}
+      ${st==='refri'?`<button class="btn b act sm" data-jrf="${esc(p.dni)}">REGRESÓ</button>`:''}
+      ${x?`<button class="edit" data-jed="${esc(x.id)}" aria-label="Corregir">✏️</button>`:''}</div>`).join(''):'<div class="empty">'+(s.lista.length?'Nadie con ese nombre.':'Aún no hay jornales cargados.')+'</div>')+'</div>';
 }
-$('#jLista').addEventListener('click',async e=>{
-  const bi=e.target.closest('[data-jin]'), bo=e.target.closest('[data-jout]'), be=e.target.closest('[data-jed]');
-  if(bi||bo){ const b=bi||bo, hoy=jFecha()===ymd(new Date()), hora=$('#jHora').value;
-    if(!hoy&&!hora){ toast('Para un día pasado indica la hora arriba.'); $('#jHora').focus(); return; }
-    b.disabled=true; b.innerHTML='<span class="spin"></span>';
-    try{ const r=await api('marcar',{tipo:'jornal',dni:b.dataset.jin||b.dataset.jout,hora,fecha:jFecha(),solo:bi?'ingreso':undefined,forzar:true,conEstado:true,bv:S.jornal.bv});
-      if(r.estado) aplicar('jornal',r.estado);
-      if(r.aviso) toast(r.nombre+': '+r.aviso); else if(r.tipo){ vibrar(120); toast((r.tipo==='ingreso'?'Ingreso ':'Salida ')+hm(r.hora)+' · '+r.nombre+(r.tipo==='salida'?' · '+horasTxt(r.horas)+' h':'')); }
-    }catch(err){ toast(err.message); renderJornal(); } }
-  if(be) editarJ(be.dataset.jed);
+// Marca rápida de jornales (al instante, se envía en segundo plano)
+function marcarJ(dni,accion){
+  const s=S.jornal, p=s.mapa.get(dni); if(!p){ toast('Ese DNI no está en tus jornales.'); return null; }
+  const hora=$('#jHora').value, hoy=esHoyJ();
+  if(!hoy&&!hora&&(accion==='ingreso'||accion==='salida')){ toast('Para un día pasado indica la hora arriba.'); $('#jHora').focus(); return null; }
+  const ts=hora?new Date(jFecha()+'T'+hora).getTime():Date.now();
+  const x=estadoJ().get(dni), st=situacion(x);
+  if(accion==='auto') accion=st==='dentro'?'salida':st==='refri'?'refriFin':(st==='falta'?'ingreso':null);
+  if(!accion){ toast(p.nombre+': ya tiene '+(st==='salio'?'salida marcada':st==='ausente'?(AUS[x.estado]||x.estado):'registro')+' este día. Usa ✏️ para corregir.'); return null; }
+  const base={tipo:'jornal',dni,fecha:jFecha(),bv:s.bv};
+  if(accion==='ingreso'){
+    if(st==='ausente'||st==='asistio'){ toast('Primero quita la ausencia con ✏️.'); return null; }
+    const id=uid(), r={id,fecha:jFecha(),dni,nombre:p.nombre,hi:ts,hf:null,refri:0,horas:null,apoyo:p.cargo,obs:'',estado:'ASISTIÓ',rd:null,permiso:false};
+    s.delDia.push(r); s.abiertas.push(r);
+    encolar('marcar',Object.assign({},base,{id,solo:'ingreso',forzar:true,conEstado:true},hora?{hora}:{ts}),{nombre:p.nombre});
+  } else if(accion==='salida'){
+    if(ts<x.hi){ toast('La salida no puede ser antes del ingreso.'); return null; }
+    let refri=x.rd==='R'?x.refri:(typeof x.rd==='number'?x.refri+Math.round((ts-x.rd)/6e4):refriLocal(x.hi,ts));
+    x.hf=ts; x.refri=refri; x.rd=x.rd?'R':null; x.horas=Math.max(0,Math.round((ts-x.hi)/6e4-refri))/60;
+    s.abiertas=s.abiertas.filter(a=>a.dni!==dni);
+    encolar('marcar',Object.assign({},base,{forzar:true,conEstado:true},hora?{hora}:{ts}),{nombre:p.nombre});
+  } else if(accion==='refriInicio'){ x.rd=ts; encolar('refriInicio',Object.assign({},base,{ts}),{nombre:p.nombre}); }
+  else if(accion==='refriFin'){ x.refri=(x.refri||0)+Math.max(0,Math.round((ts-x.rd)/6e4)); x.rd='R'; encolar('refriFin',Object.assign({},base,{ts}),{nombre:p.nombre}); }
+  vibrar(120); renderJornal();
+  const txt={ingreso:'✔ INGRESO',salida:'✔ SALIDA',refriInicio:'🍽 SALE A REFRIGERIO',refriFin:'✔ REGRESÓ DE REFRIGERIO'}[accion];
+  $('#jRes').innerHTML=`<div class="res ${accion==='salida'?'sal':'ing'}" style="padding:12px 14px"><div class="big" style="font-size:22px">${txt} ${hm(ts)}</div><div class="nm" style="font-size:17px">${esc(p.nombre)}</div>${accion==='salida'?'<div class="dt">Trabajó '+horasTxt(x.horas)+' h · refrigerio '+x.refri+' min</div>':accion==='refriFin'?'<div class="dt">Refrigerio acumulado: '+x.refri+' min</div>':''}</div>`;
+  clearTimeout(marcarJ._t); marcarJ._t=setTimeout(()=>{ $('#jRes').innerHTML=''; },6000);
+  return {tipo:accion,nombre:p.nombre,hora:ts,horas:x&&x.horas,refri:x&&x.refri,dni};
+}
+$('#jLista').addEventListener('click',e=>{
+  const g=a=>e.target.closest('[data-'+a+']');
+  let b;
+  if(b=g('jin')) marcarJ(b.dataset.jin,'ingreso');
+  else if(b=g('jout')) marcarJ(b.dataset.jout,'salida');
+  else if(b=g('jri')) marcarJ(b.dataset.jri,'refriInicio');
+  else if(b=g('jrf')) marcarJ(b.dataset.jrf,'refriFin');
+  else if(b=g('jaus')) ausenciaJ(b.dataset.jaus);
+  else if(b=g('jed')) editarJ(b.dataset.jed);
 });
+const jDniGo=()=>{ const d=$('#jDni').value.replace(/\D/g,''); if(d.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; } $('#jDni').value=''; marcarJ(d,'auto'); };
+$('#jDniGo').onclick=jDniGo; $('#jDni').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); jDniGo(); } };
+function ausenciaJ(dni,x){
+  const p=S.jornal.mapa.get(dni)||{nombre:x?x.nombre:dni};
+  modal(`<h2>${x?'Cambiar ausencia':'Registrar ausencia'}</h2><div class="hint">${esc(p.nombre)} · ${dmy(jFecha())}</div>
+    <div class="chips" id="ausChips" style="margin-top:12px">${Object.entries(AUS).map(([k,v])=>`<button data-m="${k}" style="${x&&x.estado===k?'background:var(--green);color:#fff':''}">${v}</button>`).join('')}</div>
+    <label>Observación (opcional)</label><input id="ausObs" value="${esc(x?x.obs:'')}">
+    <div class="actions">${x?'<button class="btn r" id="ausDel">Quitar</button>':''}<button class="btn ghost" id="ausNo">Cancelar</button><button class="btn g" id="ausOk">Guardar</button></div>`);
+  let motivo=x?x.estado:'';
+  document.querySelectorAll('#ausChips button').forEach(b=>b.onclick=()=>{ motivo=b.dataset.m; document.querySelectorAll('#ausChips button').forEach(o=>{ const on=o===b; o.style.background=on?'var(--green)':''; o.style.color=on?'#fff':''; }); });
+  $('#ausNo').onclick=cerrarModal;
+  $('#ausOk').onclick=()=>{ if(!motivo){ toast('Elige el motivo.'); return; }
+    const obs=$('#ausObs').value.trim(), s=S.jornal;
+    if(x){ x.estado=motivo; x.obs=obs; } else s.delDia.push({id:uid(),fecha:jFecha(),dni,nombre:p.nombre,hi:null,hf:null,refri:0,horas:null,apoyo:'',obs,estado:motivo,rd:null,permiso:false});
+    encolar('ausencia',{tipo:'jornal',dni,motivo,obs,fecha:jFecha(),bv:s.bv},{nombre:p.nombre}); cerrarModal(); renderJornal(); toast(AUS[motivo]+' · '+p.nombre); };
+  if(x) $('#ausDel').onclick=()=>{ S.jornal.delDia=S.jornal.delDia.filter(r=>r!==x); encolar('borrar',{tipo:'jornal',id:x.id,fecha:jFecha(),bv:S.jornal.bv},{nombre:p.nombre}); cerrarModal(); renderJornal(); };
+}
 function editarJ(id){
   const x=S.jornal.delDia.find(r=>r.id===id); if(!x) return;
-  const refs=[0,30,45,60]; const otro=!refs.includes(x.refri);
-  modal(`<h2>Corregir horas</h2><div class="hint">${esc(x.nombre)} · ${dmy(x.fecha)}</div>
-    <div class="row"><div><label>Hora de ingreso</label><input type="time" id="eHi" value="${hm(x.hi)}"></div><div><label>Hora de salida</label><input type="time" id="eHf" value="${x.hf?hm(x.hf):''}"></div></div>
-    <label>Refrigerio a descontar</label><div class="row">${refs.map(m=>`<button class="btn ghost sm" data-er="${m}">${m?m+' min':'Sin'}</button>`).join('')}<input id="eRef" inputmode="numeric" placeholder="min" value="${x.hf?x.refri:''}" style="flex:0 0 74px"></div>
-    <label>Observación</label><input id="eObs" value="${esc(x.obs.replace(/\s*·?\s*DESCONTANDO REFRIGERIO \d+ MIN/i,''))}">
+  if(!x.hi && x.estado!=='ASISTIÓ') return ausenciaJ(x.dni,x);
+  const refs=[0,30,45,60];
+  modal(`<h2>Corregir</h2><div class="hint">${esc(x.nombre)} · ${dmy(x.fecha)}</div>
+    <div class="row"><div><label>Ingreso</label><input type="time" id="eHi" value="${x.hi?hm(x.hi):''}"></div><div><label>Salida</label><input type="time" id="eHf" value="${x.hf?hm(x.hf):''}"></div></div>
+    <label>Refrigerio total (desayuno + almuerzo)</label><div class="row">${refs.map(m=>`<button class="btn ghost sm" data-er="${m}">${m?m+' min':'Sin'}</button>`).join('')}<input id="eRef" inputmode="numeric" placeholder="min" value="${x.hf||x.rd==='R'?x.refri:''}" style="flex:0 0 74px"></div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:15px;color:var(--ink)"><input type="checkbox" id="ePer" style="width:22px;height:22px" ${x.permiso?'checked':''}> Con permiso (llegó tarde o salió antes con autorización)</label>
+    <label>Observación</label><input id="eObs" value="${esc((x.obs||'').replace(/\s*·?\s*DESCONTANDO REFRIGERIO \d+ MIN/i,''))}">
     <div class="hint" style="margin-top:8px">Deja la salida vacía si todavía está en sala.</div>
-    <div class="actions"><button class="btn r" id="eDel">Borrar</button><button class="btn ghost" id="eNo">Cancelar</button><button class="btn g" id="eOk">Guardar</button></div>`);
+    <div class="actions"><button class="btn r" id="eDel">Borrar</button><button class="btn ghost" id="eAus">Ausencia</button><button class="btn g" id="eOk">Guardar</button></div>`);
   const marcarRef=()=>document.querySelectorAll('[data-er]').forEach(b=>{ const on=String(b.dataset.er)===$('#eRef').value; b.style.background=on?'var(--green)':''; b.style.color=on?'#fff':''; });
   document.querySelectorAll('[data-er]').forEach(b=>b.onclick=()=>{ $('#eRef').value=b.dataset.er; marcarRef(); }); $('#eRef').oninput=marcarRef; marcarRef();
-  $('#eNo').onclick=cerrarModal;
-  $('#eOk').onclick=async()=>{ const hi=$('#eHi').value, hf=$('#eHf').value; if(!hi){ toast('Falta la hora de ingreso.'); return; }
-    $('#eOk').disabled=true; try{ const r=await api('editar',{tipo:'jornal',id,hi,hf,refri:$('#eRef').value===''?undefined:Number($('#eRef').value),obs:$('#eObs').value.trim(),fecha:jFecha(),bv:S.jornal.bv}); aplicar('jornal',r.estado); cerrarModal(); toast('Horas corregidas ✔'); }
-    catch(e){ toast(e.message); $('#eOk').disabled=false; } };
+  $('#eAus').onclick=async()=>{ cerrarModal(); if(!await confirmar('¿Cambiar a ausencia?','Se borrará la asistencia de '+x.nombre+' de este día.','Continuar')) return;
+    S.jornal.delDia=S.jornal.delDia.filter(r=>r!==x); encolar('borrar',{tipo:'jornal',id:x.id,fecha:jFecha(),bv:S.jornal.bv},{nombre:x.nombre}); renderJornal(); ausenciaJ(x.dni); };
+  $('#eOk').onclick=()=>{ const hi=$('#eHi').value, hf=$('#eHf').value; if(!hi){ toast('Falta la hora de ingreso.'); return; }
+    const refri=$('#eRef').value===''?undefined:Number($('#eRef').value), permiso=$('#ePer').checked, obs=$('#eObs').value.trim();
+    x.hi=new Date(x.fecha+'T'+hi).getTime(); x.hf=hf?new Date(x.fecha+'T'+hf).getTime():null; if(x.hf&&x.hf<=x.hi) x.hf+=864e5;
+    if(refri!==undefined){ x.refri=refri; x.rd='R'; } x.permiso=permiso; x.obs=obs;
+    x.horas=x.hf?Math.max(0,Math.round((x.hf-x.hi)/6e4-(x.refri||0)))/60:null; if(x.hf) S.jornal.abiertas=S.jornal.abiertas.filter(a=>a.dni!==x.dni);
+    encolar('editar',{tipo:'jornal',id,hi,hf,refri,permiso,obs,fecha:jFecha(),bv:S.jornal.bv},{nombre:x.nombre}); cerrarModal(); renderJornal(); toast('Corregido ✔'); };
   $('#eDel').onclick=async()=>{ cerrarModal(); if(!await confirmar('¿Borrar este registro?',x.nombre+' · '+dmy(x.fecha),'Borrar','r')) return;
-    try{ const r=await api('borrar',{tipo:'jornal',id,fecha:jFecha(),bv:S.jornal.bv}); aplicar('jornal',r.estado); toast('Registro borrado'); }catch(e){ toast(e.message); } };
+    S.jornal.delDia=S.jornal.delDia.filter(r=>r!==x); S.jornal.abiertas=S.jornal.abiertas.filter(a=>a.id!==x.id); encolar('borrar',{tipo:'jornal',id,fecha:jFecha(),bv:S.jornal.bv},{nombre:x.nombre}); renderJornal(); };
 }
 $('#jTodosIn').onclick=async()=>{
   const m=estadoJ(), faltan=S.jornal.lista.filter(p=>!m.get(p.dni)); if(!faltan.length){ toast('No falta nadie.'); return; }
-  const hoy=jFecha()===ymd(new Date()), hora=$('#jHora').value; if(!hoy&&!hora){ toast('Para un día pasado indica la hora arriba.'); return; }
-  if(!await confirmar('¿Ingreso a '+faltan.length+' personas?','Hora: '+(hora||'ahora')+' · '+dmy(jFecha()),'Marcar ingreso')) return;
-  try{ const r=await api('ingresoVarios',{tipo:'jornal',dnis:faltan.map(p=>p.dni),hora,fecha:jFecha(),bv:S.jornal.bv}); aplicar('jornal',r.estado); toast('Ingreso marcado a '+r.n+' personas'+(r.errores.length?' · '+r.errores.length+' con aviso':'')); }catch(e){ toast(e.message); }
+  const hora=$('#jHora').value; if(!esHoyJ()&&!hora){ toast('Para un día pasado indica la hora arriba.'); return; }
+  if(!await confirmar('¿Ingreso a '+faltan.length+' personas?','Hora: '+(hora||'ahora')+' · '+dmy(jFecha())+'. Antes registra como ausentes a los que no vinieron.','Marcar ingreso')) return;
+  faltan.forEach(p=>marcarJ(p.dni,'ingreso'));
 };
-$('#jTodosOut').onclick=()=>{ if(!S.jornal.abiertas.length){ toast('Nadie en sala.'); return; } salidaTodos('jornal'); };
+$('#jTodosOut').onclick=()=>{ if(!S.jornal.abiertas.length&&!S.jornal.delDia.some(x=>x.hi&&!x.hf)){ toast('Nadie en sala.'); return; } salidaTodos('jornal'); };
 
 /* ---------- PERSONAL ---------- */
 let pTipo='destajo';
@@ -433,6 +579,9 @@ $('#cCompartir').onclick=async()=>{
   try{ if(navigator.share){ await navigator.share({title:'ASISTENCIA CIERRE CAC',text:texto,url:link}); return; } }catch(e){ if(e.name==='AbortError') return; }
   try{ await navigator.clipboard.writeText(texto+link); toast('Link copiado. Pégalo en WhatsApp.'); }catch(e){ window.prompt('Copia este link:',link); }
 };
+$('#cGuardarReglas').onclick=()=>{
+  const ok=v=>/^\d{2}:\d{2}$/.test(v); cfg.limite=ok($('#cLimite').value)?$('#cLimite').value:'06:20'; cfg.permIn=ok($('#cPermIn').value)?$('#cPermIn').value:'07:00'; cfg.permOut=ok($('#cPermOut').value)?$('#cPermOut').value:'15:00';
+  const rm=parseInt($('#cRefMax').value,10); cfg.refMax=String(rm>0?rm:60); ['limite','permIn','permOut','refMax'].forEach(k=>ls.set(k,cfg[k])); $('#cRefMax').value=cfg.refMax; toast('Reglas guardadas ✔'); };
 let toques=0; $('#ver').onclick=()=>{ if(++toques>=5) $('#conexion').hidden=false; };
 $('#cConectar').onclick=async()=>{ cfg.url=$('#cUrl').value.trim(); cfg.clave=$('#cClave').value.trim(); ls.set('url',cfg.url); ls.set('clave',cfg.clave); $('#pillConf').classList.toggle('show',!listo()); try{ await api('estado',{tipo:'destajo'}); toast('Conectado ✔'); refrescar('destajo'); }catch(e){ toast(e.message); } };
 let promptInstalar=null;
@@ -457,7 +606,7 @@ $('#rGo').onclick=async()=>{
   try{
     const [r,Ex]=await Promise.all([api('reporte',{tipo:rTipo,desde,hasta}),cargarExcel()]);
     if(!r.filas.length){ $('#rInfo').textContent='No hay registros en esas fechas.'; return; }
-    const blob=await armarExcel(Ex,rTipo,desde,hasta,r.filas);
+    const blob=rTipo==='jornal'?await armarJornal(Ex,desde,hasta,r.filas):await armarExcel(Ex,rTipo,desde,hasta,r.filas.filter(x=>x.hi));
     const nombre='Reporte_'+(rTipo==='jornal'?'Jornales':'Destajeros')+'_'+desde+(desde!==hasta?'_al_'+hasta:'')+'.xlsx';
     const file=new File([blob],nombre,{type:blob.type});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nombre; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
@@ -530,18 +679,154 @@ async function armarExcel(Ex,tipo,desde,hasta,filas){
   return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
 
+/* ---------- REPORTE DE JORNALES: podio, ingreso/salida e incidencias ---------- */
+const minDia=t=>{ const d=new Date(t); return d.getHours()*60+d.getMinutes(); };
+const aMin=s=>{ const [h,m]=String(s||'0:0').split(':').map(Number); return h*60+(m||0); };
+const DCORTO=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+// Analiza cada registro con las reglas de Ajustes
+function analizarJornal(filas,desde,hasta,activos){
+  const LIM=aMin(cfg.limite), PIN=aMin(cfg.permIn), POUT=aMin(cfg.permOut), RMAX=Number(cfg.refMax)||60;
+  const por=new Map(), dias=new Set();
+  filas.forEach(x=>{ if(!x.fecha) return; dias.add(x.fecha);
+    if(!por.has(x.dni)) por.set(x.dni,{dni:x.dni,nombre:x.nombre,dias:new Map()});
+    const p=por.get(x.dni); if(!p.dias.has(x.fecha)||x.hi) p.dias.set(x.fecha,x); });
+  const hoy=ymd(new Date());
+  (activos||[]).forEach(a=>{ if(!por.has(a.dni)) por.set(a.dni,{dni:a.dni,nombre:a.nombre,dias:new Map()}); });
+  const lab=[...dias].filter(d=>d>=desde&&d<=hasta&&d<=hoy).sort();
+  const act=new Set((activos||[]).map(a=>a.dni));
+  const tarde=[], noVino=[], refri=[];
+  const gente=[...por.values()].map(p=>{
+    const c={reg:0,asis:0,tard:0,perm:0,vac:0,lic:0,fj:0,fi:0,horas:0,dh:0};
+    lab.forEach(d=>{
+      const x=p.dias.get(d), dw=new Date(d+'T12:00').getDay();
+      if(!x){ if(act.has(p.dni)&&p.dias.size&&d<hoy) noVino.push({fecha:d,nombre:p.nombre,motivo:'Sin registro'}); return; }
+      c.reg++; x.marca={};
+      if(x.hi||x.estado==='ASISTIÓ'){
+        c.asis++;
+        if(x.hi){ const mi=minDia(x.hi), mo=x.hf?minDia(x.hf):null, lv=dw>=1&&dw<=5;
+          const permIn=lv&&mi>PIN, permOut=lv&&mo!=null&&mo<POUT;
+          if(x.permiso||permIn||permOut){ c.perm++; x.marca.perm=true; x.marca.permIn=permIn||(x.permiso&&mi>LIM); x.marca.permOut=permOut; }
+          else if(mi>LIM){ c.tard++; x.marca.tarde=true; tarde.push({fecha:d,nombre:p.nombre,ingreso:hm(x.hi),min:mi-LIM,obs:x.obs}); }
+          if(x.refri>RMAX) refri.push({fecha:d,nombre:p.nombre,refri:x.refri,exceso:x.refri-RMAX});
+        }
+        if(x.horas!=null){ c.horas+=x.horas; c.dh++; }
+      } else {
+        const k={'VACACIONES':'vac','LICENCIA':'lic','PERMISO':'perm','FALTA JUSTIFICADA':'fj','FALTA INJUSTIFICADA':'fi'}[x.estado];
+        if(k) c[k]++; noVino.push({fecha:d,nombre:p.nombre,motivo:(AUS[x.estado]||x.estado)+(x.obs?' · '+x.obs:'')});
+      }
+    });
+    c.prom=c.dh?c.horas/c.dh:0; return Object.assign(p,{c});
+  }).filter(p=>p.c.reg>0);
+  gente.sort((a,b)=>b.c.prom-a.c.prom||a.nombre.localeCompare(b.nombre,'es'));
+  const ord=(a,b)=>a.fecha.localeCompare(b.fecha)||a.nombre.localeCompare(b.nombre,'es');
+  return {gente,lab,tarde:tarde.sort(ord),noVino:noVino.sort(ord),refri:refri.sort(ord),RMAX};
+}
+async function armarJornal(Ex,desde,hasta,filas){
+  const A=analizarJornal(filas,desde,hasta,S.jornal.lista);
+  const NAVY='FF0E1B2E', NAVY2='FF14263F', FILA1='FF172C48', FILA2='FF1C3556', AZUL='FF2563A8', BL='FFFFFFFF', SUAVE='FFB9C7DA',
+        VERDE='FF34C77B', ROJO='FFFF5C5C', AMA='FFFFD966', CELESTE='FF8EC9FF', ORO='FFD4A72C', PLATA='FFAEB8C6', BRONCE='FFC07A3E';
+  const wb=new Ex.Workbook(); wb.creator='ASISTENCIA CIERRE CAC';
+  const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});
+  const borde={top:{style:'thin',color:{argb:'FF2B4466'}},bottom:{style:'thin',color:{argb:'FF2B4466'}},left:{style:'thin',color:{argb:'FF2B4466'}},right:{style:'thin',color:{argb:'FF2B4466'}}};
+  const fondo=(ws,filas,cols)=>{ for(let r=1;r<=filas;r++) for(let c=1;c<=cols;c++) ws.getCell(r,c).fill=fill(NAVY); };
+  const titulo=(ws,txt,sub,cols)=>{ ws.mergeCells(1,1,1,cols); const t=ws.getCell(1,1); t.value=txt; t.font={bold:true,size:18,color:{argb:BL}}; t.alignment={vertical:'middle'}; ws.getRow(1).height=34;
+    ws.mergeCells(2,1,2,cols); const s=ws.getCell(2,1); s.value=sub; s.font={size:11,color:{argb:SUAVE}}; };
+  const cab=(ws,r,c,vals)=>vals.forEach((v,i)=>{ const x=ws.getCell(r,c+i); x.value=v; x.fill=fill(AZUL); x.font={bold:true,color:{argb:BL}}; x.alignment={horizontal:'center',vertical:'middle',wrapText:true}; x.border=borde; });
+  const celda=(ws,r,c,v,o)=>{ const x=ws.getCell(r,c); x.value=v; x.fill=fill((o&&o.bg)||(r%2?FILA1:FILA2)); x.font=Object.assign({color:{argb:BL}},o&&o.font); x.alignment=Object.assign({vertical:'middle',horizontal:typeof v==='number'?'center':'left'},o&&o.al); x.border=borde; if(o&&o.fmt) x.numFmt=o.fmt; return x; };
+  const rangoTxt='Del '+dmy(desde)+' al '+dmy(hasta)+' · '+A.lab.length+' días con registro';
+
+  /* 1) PODIO */
+  const w1=wb.addWorksheet('Podio',{views:[{showGridLines:false}]});
+  [5,36,12,12,12,13,12,12,12,12,12].forEach((w,i)=>w1.getColumn(i+1).width=w);
+  const n1=Math.max(30,A.gente.length+14); fondo(w1,n1,11);
+  titulo(w1,'🏆 PODIO DEL MES',rangoTxt+' · ordenado por promedio de horas por día',11);
+  const podio=[[1,PLATA,'2°',1],[0,ORO,'1°',0],[2,BRONCE,'3°',2]], cajas=[[1,3],[4,7],[8,11]];
+  podio.forEach(([idx,col,lugar],k)=>{ const p=A.gente[idx]; if(!p) return; const [c1,c2]=cajas[k], r0=idx===0?4:5;
+    w1.mergeCells(r0,c1,r0,c2); w1.mergeCells(r0+1,c1,r0+1,c2); w1.mergeCells(r0+2,c1,r0+2,c2);
+    const L=w1.getCell(r0,c1), N=w1.getCell(r0+1,c1), H=w1.getCell(r0+2,c1);
+    L.value=lugar+' LUGAR'; N.value=p.nombre; H.value=horasTxt(p.c.prom)+' h/día · '+Math.round(p.c.asis/p.c.reg*100)+'% asistencia';
+    [L,N,H].forEach(x=>{ x.fill=fill(col); x.alignment={horizontal:'center',vertical:'middle',wrapText:true}; x.font={bold:true,color:{argb:'FF10161F'},size:x===L?16:x===N?12:11}; });
+    w1.getRow(r0+1).height=30; });
+  const r1=9; cab(w1,r1,1,['N°','Apellidos y nombre','% asistencia','% tardanzas','% permisos','% vacaciones','% licencias','% F. justif.','% F. injustif.','Horas efectivas','Prom. h/día']);
+  w1.getRow(r1).height=32;
+  const proms=A.gente.filter(p=>p.c.dh).map(p=>p.c.prom), maxP=Math.max(...proms), minP=Math.min(...proms);
+  A.gente.forEach((p,i)=>{ const r=r1+1+i, c=p.c, pc=v=>c.reg?v/c.reg:0, f='0%';
+    celda(w1,r,1,i+1); celda(w1,r,2,p.nombre);
+    celda(w1,r,3,pc(c.asis),{fmt:f,font:{bold:true,color:{argb:c.asis===c.reg?VERDE:BL}}});
+    celda(w1,r,4,pc(c.tard),{fmt:f,font:{color:{argb:c.tard?ROJO:BL},bold:!!c.tard}});
+    celda(w1,r,5,pc(c.perm),{fmt:f,font:{color:{argb:c.perm?ROJO:BL},bold:!!c.perm}});
+    celda(w1,r,6,pc(c.vac),{fmt:f}); celda(w1,r,7,pc(c.lic),{fmt:f}); celda(w1,r,8,pc(c.fj),{fmt:f});
+    celda(w1,r,9,pc(c.fi),{fmt:f,font:{color:{argb:c.fi?ROJO:BL},bold:!!c.fi}});
+    celda(w1,r,10,Math.round(c.horas*100)/100,{fmt:'0.00'});
+    const mejor=c.dh&&c.prom===maxP, peor=c.dh&&c.prom===minP&&maxP!==minP;
+    celda(w1,r,11,Math.round(c.prom*100)/100,{fmt:'0.00',bg:mejor?'FF1E7A4A':peor?'FF9B2C2C':undefined,font:{bold:true,color:{argb:BL}}}); });
+  const rn=r1+A.gente.length+2; w1.mergeCells(rn,1,rn,11);
+  const nota=w1.getCell(rn,1); nota.value='Tardanza = ingreso después de '+cfg.limite+' · Permiso = ingreso después de '+cfg.permIn+' o salida antes de '+cfg.permOut+' (L–V) o marcado con permiso · % sobre los días con registro';
+  nota.font={italic:true,size:10,color:{argb:SUAVE}}; nota.alignment={wrapText:true}; w1.getRow(rn).height=28;
+
+  /* 2) INGRESO Y SALIDA */
+  const w2=wb.addWorksheet('Ingreso y salida',{views:[{showGridLines:false,state:'frozen',xSplit:2,ySplit:5}]});
+  const todos=[]; for(let d=new Date(desde+'T12:00');ymd(d)<=hasta;d.setDate(d.getDate()+1)) if(d.getDay()!==0) todos.push(ymd(d));
+  const dias=todos.slice(0,31), cols2=2+dias.length*2;
+  w2.getColumn(1).width=5; w2.getColumn(2).width=34; for(let c=3;c<=cols2;c++) w2.getColumn(c).width=8.5;
+  const gente2=[...A.gente].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  fondo(w2,gente2.length+9,cols2);
+  titulo(w2,'INGRESO Y SALIDA DEL PERSONAL','Desde '+dmy(desde)+' hasta '+dmy(hasta)+' · domingos no se muestran · máx. 31 días'+(todos.length>31?' (se muestran los primeros 31)':''),Math.min(cols2,20));
+  w2.mergeCells(4,1,5,1); w2.mergeCells(4,2,5,2); cab(w2,4,1,['N°','Apellidos y nombre']); w2.getCell(5,1).fill=fill(AZUL); w2.getCell(5,2).fill=fill(AZUL);
+  dias.forEach((d,i)=>{ const c=3+i*2, dt=new Date(d+'T12:00'); w2.mergeCells(4,c,4,c+1); cab(w2,4,c,[DCORTO[dt.getDay()]+' '+d.slice(8,10)+'/'+d.slice(5,7)]); cab(w2,5,c,['Ingreso','Salida']); });
+  gente2.forEach((p,i)=>{ const r=6+i; celda(w2,r,1,i+1); celda(w2,r,2,p.nombre);
+    dias.forEach((d,j)=>{ const c=3+j*2, x=p.dias.get(d), lab=A.lab.includes(d), al={horizontal:'center'};
+      if(!x){ celda(w2,r,c,lab?'Sin registro':'',{al,font:{color:{argb:SUAVE},size:9}}); celda(w2,r,c+1,'',{}); if(lab) w2.mergeCells(r,c,r,c+1); return; }
+      if(!x.hi){ const txt=x.estado==='ASISTIÓ'?'Asistió':(AUS[x.estado]||x.estado); celda(w2,r,c,txt,{al:{horizontal:'center',wrapText:true},font:{color:{argb:x.estado==='ASISTIÓ'?BL:CELESTE},size:9,bold:true},bg:x.estado==='ASISTIÓ'?undefined:'FF1A3D63'}); celda(w2,r,c+1,'',{}); w2.mergeCells(r,c,r,c+1); return; }
+      const m=x.marca||{};
+      celda(w2,r,c,hm(x.hi),{al,bg:m.permIn?AMA:undefined,font:{color:{argb:m.permIn?'FF1D1D1D':m.tarde?ROJO:BL},bold:!!(m.tarde||m.permIn)}});
+      celda(w2,r,c+1,x.hf?hm(x.hf):'—',{al,bg:m.permOut?AMA:undefined,font:{color:{argb:m.permOut?'FF1D1D1D':BL},bold:!!m.permOut}}); }); });
+  const rl=7+gente2.length; w2.mergeCells(rl,1,rl,Math.min(cols2,20));
+  const ley=w2.getCell(rl,1); ley.value='Rojo = tardanza (después de '+cfg.limite+') · Amarillo = permiso u horario fuera de lo normal · Celeste = ausencia (vacaciones, licencia, falta)';
+  ley.font={italic:true,size:10,color:{argb:SUAVE}};
+
+  /* 3) INCIDENCIAS */
+  const w3=wb.addWorksheet('Incidencias',{views:[{showGridLines:false}]});
+  [5,11,32,9,9,24,3,11,32,26,3,11,32,11,10].forEach((w,i)=>w3.getColumn(i+1).width=w);
+  const alto=Math.max(A.tarde.length,A.noVino.length,A.refri.length)+10; fondo(w3,alto,15);
+  titulo(w3,'INCIDENCIAS DEL PERSONAL · TARDANZAS, INASISTENCIAS Y REFRIGERIO',rangoTxt,15);
+  const sub=(c1,c2,txt,col)=>{ w3.mergeCells(4,c1,4,c2); const x=w3.getCell(4,c1); x.value=txt; x.fill=fill(NAVY2); x.font={bold:true,size:12,color:{argb:col}}; x.alignment={horizontal:'center',vertical:'middle'}; w3.getRow(4).height=24; };
+  sub(1,6,'⏰ LLEGARON TARDE ('+A.tarde.length+')',ROJO); sub(8,10,'🚫 NO ASISTIERON ('+A.noVino.length+')',CELESTE); sub(12,15,'🍽 REFRIGERIO MAYOR AL MÁXIMO ('+A.refri.length+')',AMA);
+  cab(w3,5,1,['N°','Fecha','Nombre','Ingreso','Min. tarde','Observación']); cab(w3,5,8,['Fecha','Nombre','Motivo']); cab(w3,5,12,['Fecha','Nombre','Refrigerio','Exceso (min)']);
+  const vacio=(c1,c2,txt)=>{ w3.mergeCells(6,c1,6,c2); celda(w3,6,c1,txt,{al:{horizontal:'center'},font:{color:{argb:SUAVE},italic:true}}); };
+  if(!A.tarde.length) vacio(1,6,'Nadie llegó tarde 👏');
+  A.tarde.forEach((t,i)=>{ const r=6+i; celda(w3,r,1,i+1); celda(w3,r,2,dmy(t.fecha)); celda(w3,r,3,t.nombre); celda(w3,r,4,t.ingreso,{al:{horizontal:'center'},font:{color:{argb:ROJO},bold:true}}); celda(w3,r,5,t.min,{font:{color:{argb:ROJO},bold:true}}); celda(w3,r,6,t.obs||''); });
+  if(!A.noVino.length) vacio(8,10,'Todos asistieron');
+  A.noVino.forEach((t,i)=>{ const r=6+i; celda(w3,r,8,dmy(t.fecha)); celda(w3,r,9,t.nombre); celda(w3,r,10,t.motivo,{font:{color:{argb:t.motivo==='Sin registro'?AMA:CELESTE},bold:true}}); });
+  if(!A.refri.length) vacio(12,15,'Nadie pasó el máximo');
+  A.refri.forEach((t,i)=>{ const r=6+i; celda(w3,r,12,dmy(t.fecha)); celda(w3,r,13,t.nombre); celda(w3,r,14,t.refri+' min',{al:{horizontal:'center'}}); celda(w3,r,15,t.exceso,{font:{color:{argb:AMA},bold:true}}); });
+  const rn3=alto-2; w3.mergeCells(rn3,1,rn3,15); const n3=w3.getCell(rn3,1);
+  n3.value='Tardanza = ingreso después de '+cfg.limite+' · Refrigerio = desayuno + almuerzo, máximo '+A.RMAX+' min · "Sin registro" = no se marcó asistencia ni ausencia ese día';
+  n3.font={italic:true,size:10,color:{argb:SUAVE}};
+
+  /* 4) DETALLE */
+  const w4=wb.addWorksheet('Detalle',{views:[{state:'frozen',ySplit:1}]});
+  w4.columns=[{header:'Fecha',width:11},{header:'DNI',width:11},{header:'Apellidos y nombre',width:34},{header:'Cargo',width:22},{header:'Estado',width:18},{header:'Ingreso',width:9},{header:'Salida',width:9},{header:'Refrigerio (min)',width:11},{header:'Horas',width:8},{header:'Permiso',width:8},{header:'Observación',width:30}];
+  w4.getRow(1).eachCell(x=>{ x.fill=fill(AZUL); x.font={bold:true,color:{argb:BL}}; x.alignment={horizontal:'center',vertical:'middle',wrapText:true}; });
+  [...filas].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.nombre.localeCompare(b.nombre,'es')).forEach(x=>{
+    w4.addRow([dmy(x.fecha),x.dni,x.nombre,x.apoyo,x.hi?'Asistió':(AUS[x.estado]||x.estado||''),x.hi?hm(x.hi):'',x.hf?hm(x.hf):'',x.hi?x.refri:'',x.horas!=null?Math.round(x.horas*100)/100:'',x.permiso?'Sí':'',x.obs]); });
+  w4.autoFilter={from:'A1',to:'K1'};
+  const buf=await wb.xlsx.writeBuffer();
+  return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
 /* ---------- ESCÁNER DE TARJETA: código de barras + número impreso ---------- */
-let stream=null, scanOn=false, loopT=null, detector=null, zx=null, tessP=null, workers=[], ultimoCod={c:'',t:0}, pausaHasta=0, ocrLibres=0, vuelta=0, luz=false, candidato={c:'',n:0,t:0};
+let scanTipo='destajo', stream=null, scanOn=false, loopT=null, detector=null, zx=null, tessP=null, workers=[], ultimoCod={c:'',t:0}, pausaHasta=0, ocrLibres=0, vuelta=0, luz=false, candidato={c:'',n:0,t:0};
 const cnv=document.createElement('canvas'), ctx=cnv.getContext('2d',{willReadFrequently:true});
 const TXT_GUIA='Encuadra toda la tarjeta';
 const setTxt=t=>{ $('#scanTxt').textContent=t; };
 function cargarScript(src){ return new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>no(new Error('sin señal')); document.head.appendChild(s); }); }
 // Busca el DNI en un texto: exacto en la base; o con 1 número mal leído (se confirma con 2 lecturas)
 function buscarDni(texto, soloBase){
-  const mapa=S.destajo.mapa, nums=String(texto||'').match(/\d{7,14}/g)||[];
+  const mapa=S[scanTipo].mapa, nums=String(texto||'').match(/\d{7,14}/g)||[], tol=mapa.size<200?2:1;
   for(const n of nums){ if(mapa.has(n)) return {dni:n,ex:true}; if(n.length>9) for(const d of mapa.keys()) if(n.includes(d)) return {dni:d,ex:true}; }
   for(const n of nums){ if(n.length!==8&&n.length!==9) continue; let hit=null, k=0;
-    for(const d of mapa.keys()){ if(d.length!==n.length) continue; let dif=0; for(let i=0;i<n.length&&dif<2;i++) if(n[i]!==d[i]) dif++; if(dif===1){ hit=d; if(++k>1) break; } }
+    for(const d of mapa.keys()){ if(d.length!==n.length) continue; let dif=0; for(let i=0;i<n.length&&dif<=tol;i++) if(n[i]!==d[i]) dif++; if(dif>=1&&dif<=tol){ hit=d; if(++k>1) break; } }
     if(k===1) return {dni:hit,ex:false}; }
   if(soloBase) return null;
   const n=nums.find(x=>x.length===8||x.length===9); return n?{dni:n,ex:true}:null;
@@ -556,7 +841,7 @@ function zxLeer(c){ try{ const b=new ZXing.BinaryBitmap(new ZXing.HybridBinarize
 function cargarTess(){
   if(tessP) return tessP;
   tessP=(async()=>{ await cargarScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
-    const n=(navigator.hardwareConcurrency||4)>=6?2:1;
+    const hc=navigator.hardwareConcurrency||4, n=hc>=8?3:hc>=4?2:1;
     for(let i=0;i<n;i++){ const w=await Tesseract.createWorker('eng'); await w.setParameters({tessedit_char_whitelist:'0123456789'}); workers.push({w,libre:true}); }
     ocrLibres=workers.length; })();
   tessP.catch(()=>{ tessP=null; }); return tessP;
@@ -584,7 +869,7 @@ function franja(src,y0f,y1f,umbral){
   // borde blanco: el lector trabaja mejor con margen
   const c=document.createElement('canvas'); c.width=W+40; c.height=H+40; const gc=c.getContext('2d'); gc.fillStyle='#fff'; gc.fillRect(0,0,c.width,c.height); gc.drawImage(a,20,20); return c;
 }
-const PASADAS=[[.55,.95,200,'11'],[.62,.95,185,'11'],[.65,.92,200,'11'],[.55,.95,215,'11'],[.62,.95,200,'11'],[.65,.92,215,'11'],[.70,.95,200,'11']];
+const PASADAS=[[.55,.95,200,'11'],[.62,.95,185,'11'],[.65,.92,200,'11'],[.55,.95,215,'11'],[.45,.98,200,'11'],[.62,.95,200,'11'],[.65,.92,215,'11'],[.70,.95,200,'11'],[.58,.90,175,'11'],[.35,.98,205,'11']];
 async function ocr(src,pasada){
   const libre=workers.find(x=>x.libre); if(!libre) return null; libre.libre=false;
   try{ const [y0,y1,um,psm]=pasada; await libre.w.setParameters({tessedit_pageseg_mode:psm});
@@ -597,7 +882,9 @@ async function barras(c){
   if(zx){ const t=zxLeer(c); if(t){ const r=buscarDni(t,false); if(r) return r; } }
   return null;
 }
-async function abrirScanner(){
+async function abrirScanner(tipo){
+  scanTipo=tipo==='jornal'?'jornal':'destajo'; ultimoCod={c:'',t:0};
+  if(scanTipo==='jornal'&&!esHoyJ()&&!$('#jHora').value){ toast('Para un día pasado indica la hora arriba.'); return; }
   if(!listo()){ toast('Esta app aún no está conectada.'); return; }
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('Este navegador no deja usar la cámara. Abre la app con Chrome.'); return; }
   $('#scan').hidden=false; $('#scanRes').innerHTML=''; setTxt('Abriendo cámara…');
@@ -646,8 +933,17 @@ function aceptar(q,via){
 async function encontrado(cod,via){
   const now=Date.now(); if(cod===ultimoCod.c && now-ultimoCod.t<8000) return;
   ultimoCod={c:cod,t:now}; pausaHasta=now+60000; vibrar(60);
-  const p=S.destajo.mapa.get(cod);
+  const p=S[scanTipo].mapa.get(cod);
   setTxt((p?p.nombre:'DNI '+cod)+' · registrando…');
+  if(scanTipo==='jornal'){
+    const r=marcarJ(cod,'auto');
+    if(r){ const T={ingreso:['ing','✔ INGRESO'],salida:['sal','✔ SALIDA'],refriInicio:['ing','🍽 SALE A REFRIGERIO'],refriFin:['ing','✔ REGRESÓ DE REFRIGERIO']}[r.tipo];
+      $('#scanRes').innerHTML=`<div class="res ${T[0]}"><div class="big">${T[1]} ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">${r.tipo==='salida'?'Trabajó '+horasTxt(r.horas)+' h · refrigerio '+r.refri+' min':'DNI '+esc(r.dni)} · leído por ${via}</div></div>`;
+    } else $('#scanRes').innerHTML=`<div class="res warn"><div class="nm">${esc(p?p.nombre:'DNI '+cod)}</div><div class="dt">Revisa el mensaje abajo</div></div>`;
+    setTxt('Listo. Pasa la siguiente tarjeta'); pausaHasta=Date.now()+1500; ultimoCod.t=Date.now();
+    setTimeout(()=>{ if(scanOn && Date.now()-ultimoCod.t>3000){ $('#scanRes').innerHTML=''; setTxt(TXT_GUIA); } },4000);
+    return;
+  }
   const r=await procesar({dni:cod});
   if(!scanOn) return;
   if(r && r.tipo){
@@ -673,10 +969,10 @@ async function tomarFoto(){
   }catch(e){ setTxt('No se pudo tomar la foto'); }
   pausaHasta=Date.now()+800;
 }
-$('#bScan').onclick=abrirScanner;
+$('#bScan').onclick=()=>abrirScanner('destajo'); $('#jScan').onclick=()=>abrirScanner('jornal');
 $('#sCerrar').onclick=cerrarScanner;
 $('#sFoto').onclick=tomarFoto;
-$('#sDni').onclick=()=>{ cerrarScanner(); $('#dniIn').focus(); };
+$('#sDni').onclick=()=>{ cerrarScanner(); $(scanTipo==='jornal'?'#jDni':'#dniIn').focus(); };
 $('#sLuz').onclick=async()=>{ try{ luz=!luz; await stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:luz}]}); $('#sLuz').textContent=luz?'🔦✓':'🔦'; }catch(e){ toast('Este celular no deja usar la linterna aquí.'); } };
 
 
