@@ -26,7 +26,20 @@
   .btn{border:0;border-radius:12px;padding:13px 14px;font:700 15px system-ui;background:#e9ece8;color:var(--ink);cursor:pointer}
   .btn.full{width:100%}.btn.g{background:var(--green);color:#fff}.btn.r{background:var(--red);color:#fff}.btn.b{background:var(--blue);color:#fff}
   .btn.ghost{background:none;border:1px solid var(--line)}.btn:disabled{opacity:.45}
-  .big2{display:flex;gap:10px;margin-bottom:12px}
+  .scanbtn{width:100%;border:0;border-radius:18px;padding:26px 12px;margin-bottom:12px;background:var(--green);color:#fff;font:800 21px system-ui;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 14px #1f7a4d40}
+  .scanbtn .i{font-size:40px}.scanbtn small{font:500 13px system-ui;opacity:.85}
+  .dnibox input{font-size:24px;letter-spacing:.12em;text-align:center;padding:14px}
+  .dnibox .btn{flex:0 0 84px;font-size:18px}
+  .opts{padding:10px 12px}.opts summary{font-size:14px;color:var(--muted);cursor:pointer}
+  .scan{position:fixed;inset:0;background:#000;z-index:40;display:flex;flex-direction:column}
+  .scan[hidden]{display:none}
+  .scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .scan .guia{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+  .scan .marco{width:86%;max-width:520px;aspect-ratio:2.2/1;border:3px solid #7fd1a6;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.45)}
+  .scan .txt{color:#fff;margin-top:14px;font-size:15px;text-align:center;padding:0 20px;text-shadow:0 1px 3px #000}
+  .scanres{position:absolute;left:12px;right:12px;top:calc(14px + env(safe-area-inset-top))}
+  .scanbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.7))}
+  .scanbar .btn{flex:1}
   .bigbtn{flex:1;border:0;border-radius:16px;padding:20px 8px;font:700 16px system-ui;background:#fff;border:2px solid #cfe3d8;color:var(--ink)}
   .bigbtn .i{font-size:34px;display:block;margin-bottom:4px}
   .bigbtn.on{background:var(--green-bg);border-color:var(--green)}
@@ -65,33 +78,26 @@
   <!-- MARCAR -->
   <section id="t-marcar">
     <div class="pill warn" id="pillConf">Falta configurar la app. Ve a <b>Ajustes</b>.</div>
-    <div class="big2">
-      <button class="bigbtn" id="bNfc"><span class="i">📶</span>Tarjeta NFC</button>
-      <label class="bigbtn" for="fotoIn"><span class="i">📷</span>Foto del DNI</label>
-      <input type="file" id="fotoIn" accept="image/*" capture="environment" hidden>
-    </div>
-    <div class="pill" id="pillNfc"></div>
-    <div class="card row">
-      <input id="dniIn" inputmode="numeric" maxlength="9" placeholder="…o escribe el DNI / C.E." autocomplete="off">
-      <button class="btn g" id="dniGo" style="flex:0 0 70px">OK</button>
+    <button class="scanbtn" id="bScan"><span class="i">📷</span>Escanear tarjeta<small>Código de barras o número impreso</small></button>
+    <div class="card row dnibox">
+      <input id="dniIn" inputmode="numeric" maxlength="9" placeholder="Escribe el DNI" autocomplete="off">
+      <button class="btn g" id="dniGo">OK</button>
     </div>
     <div id="res"></div>
-    <div class="card">
-      <label style="margin-top:0">Descripción de apoyo</label>
+    <details class="card opts">
+      <summary>Apoyo: <b id="laborTxt">SALA DE CIERRE</b> · cambiar</summary>
+      <label>Descripción de apoyo</label>
       <input id="labor" list="labores" placeholder="SALA DE CIERRE">
       <datalist id="labores"><option value="SALA DE CIERRE"><option value="APOYO A SALA CIERRE"><option value="MONDINI"><option value="ACONDICIONAMIENTO"><option value="LIMPIEZA PROFUNDA SALAS PROCESO"></datalist>
       <label>Observación (opcional, se guarda con la próxima marca)</label>
       <input id="obs" list="obsl" placeholder="Ej: 45 MIN DE COMIDA, JORNALERO">
       <datalist id="obsl"><option value="45 MIN DE COMIDA"><option value="50 MIN DE COMIDA"><option value="JORNALERO"></datalist>
-    </div>
+    </details>
     <div class="sec" id="secSala">En sala (0)</div>
     <div id="sala"></div>
     <div style="margin-top:10px" id="zonaTodos"></div>
     <div class="sec">Últimas marcas de hoy</div>
     <div id="ultimas"></div>
-    <div class="sec">Por ingresar</div>
-    <input id="buscar" placeholder="🔍 Buscar nombre o DNI" autocomplete="off" style="margin-bottom:8px">
-    <div id="fuera"></div>
   </section>
 
   <!-- PERSONAL -->
@@ -100,12 +106,11 @@
       <b>Agregar o actualizar destajero</b>
       <label>DNI o C.E.</label><input id="pDni" inputmode="numeric" maxlength="9" autocomplete="off">
       <label>Nombre y apellido</label><input id="pNom" autocomplete="off">
-      <label>Tarjeta NFC (opcional)</label>
-      <div class="row"><input id="pTar" placeholder="Sin tarjeta" readonly><button class="btn ghost" id="pLeer" style="flex:0 0 120px">📶 Leer</button></div>
       <div style="height:12px"></div>
       <button class="btn g full" id="pGuardar">Guardar</button>
     </div>
     <div class="sec" id="pCount">Lista</div>
+    <input id="pBuscar" placeholder="🔍 Buscar nombre o DNI" autocomplete="off" style="margin-bottom:8px">
     <div id="pLista"></div>
     <p class="hint">Para corregir horas o borrar un registro, ábrelo en la hoja de Google (Ajustes → Abrir hoja).</p>
   </section>
@@ -137,6 +142,16 @@
     <div class="card"><a id="linkHoja" class="btn ghost full" style="display:block;text-align:center;text-decoration:none;color:inherit" target="_blank" rel="noopener">📊 Abrir hoja de Google (Excel)</a></div>
   </section>
 </main>
+<div class="scan" id="scan" hidden>
+  <video id="vid" playsinline muted></video>
+  <div class="guia"><div class="marco"></div><div class="txt" id="scanTxt">Pon el código de barras y el número dentro del recuadro</div><div class="txt" style="font-size:13px;opacity:.8">Número abajo, con buena luz</div></div>
+  <div class="scanres" id="scanRes"></div>
+  <div class="scanbar">
+    <button class="btn" id="sLuz" hidden>🔦 Luz</button>
+    <button class="btn" id="sDni">⌨ Escribir DNI</button>
+    <button class="btn r" id="sCerrar">Cerrar</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -181,10 +196,9 @@ async function refrescar(silencio){
   catch(e){ if(!silencio) toast(e.message); }
 }
 setInterval(()=>{ if(document.visibilityState==='visible') refrescar(true); },30000);
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ refrescar(true); if(ls.get('nfc','')==='1') iniciarNfc(true); } });
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') refrescar(true); else cerrarScanner(); });
 
 function render(){
-  const q=$('#buscar').value.trim().toLowerCase();
   const enSala=new Set(abiertas.map(a=>a.dni));
   $('#secSala').textContent='En sala ('+abiertas.length+')';
   $('#sala').innerHTML='<div class="list">'+(abiertas.length?[...abiertas].sort((a,b)=>a.ingreso-b.ingreso).map(a=>`
@@ -193,18 +207,17 @@ function render(){
   $('#zonaTodos').innerHTML=abiertas.length>1?'<button class="btn r full" id="bTodos">Marcar SALIDA a todos ('+abiertas.length+')</button>':'';
   if($('#bTodos')) $('#bTodos').onclick=salidaTodos;
   $('#ultimas').innerHTML='<div class="list">'+(ultimas.length?ultimas.map(e=>`<div class="item ${e.tipo==='Ingreso'?'in':''}"><div class="who"><div class="name">${esc(e.n)}</div><div class="meta">${e.tipo} ${hm(e.t)}${e.h!==''&&e.h!=null?' · '+horasTxt(e.h)+' h':''}</div></div></div>`).join(''):'<div class="empty">Aún no hay marcas hoy.</div>')+'</div>';
-  const fuera=personas.filter(p=>!enSala.has(p.dni)&&(!q||p.nombre.toLowerCase().includes(q)||p.dni.includes(q))).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-  $('#fuera').innerHTML='<div class="list">'+(fuera.length?fuera.slice(0,60).map(p=>`<div class="item"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">DNI ${esc(p.dni)}${p.tarjeta?' · 📶':''}</div></div>
-    <button class="btn g act" data-dni="${esc(p.dni)}">INGRESO</button></div>`).join(''):'<div class="empty">'+(personas.length?'Nadie con ese nombre o DNI.':'Aún no hay personal registrado.')+'</div>')+'</div>';
-  const pl=[...personas].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  const pq=$('#pBuscar').value.trim().toLowerCase();
+  const pl=[...personas].filter(p=>!pq||p.nombre.toLowerCase().includes(pq)||p.dni.includes(pq)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   $('#pCount').textContent='Lista ('+pl.length+')';
-  $('#pLista').innerHTML='<div class="list">'+(pl.length?pl.map(p=>`<div class="item"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">DNI ${esc(p.dni)} · ${p.tarjeta?'📶 con tarjeta':'sin tarjeta'}</div></div><button class="btn ghost" data-edit="${esc(p.dni)}">Editar</button></div>`).join(''):'<div class="empty">Sin personas todavía.</div>')+'</div>';
+  $('#pLista').innerHTML='<div class="list">'+(pl.length?pl.slice(0,40).map(p=>`<div class="item"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">DNI ${esc(p.dni)}</div></div><button class="btn ghost" data-edit="${esc(p.dni)}">Editar</button></div>`).join('')+(pl.length>40?'<div class="empty">'+(pl.length-40)+' más… escribe para buscar</div>':''):'<div class="empty">'+(personas.length?'Nadie con ese nombre o DNI.':'Sin personas todavía.')+'</div>')+'</div>';
   if(hojaUrl) $('#linkHoja').href=hojaUrl;
 }
-$('#buscar').oninput=render;
+$('#pBuscar').oninput=render;
+const laborTxt=()=>{ $('#laborTxt').textContent=$('#labor').value.trim()||'SALA DE CIERRE'; }; $('#labor').addEventListener('input',laborTxt); laborTxt();
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-dni]'); if(b){ b.disabled=true; procesar({dni:b.dataset.dni}).finally(()=>{b.disabled=false;}); return; }
-  const ed=e.target.closest('[data-edit]'); if(ed){ const p=personas.find(x=>x.dni===ed.dataset.edit); if(p){ $('#pDni').value=p.dni; $('#pNom').value=p.nombre; $('#pTar').value=''; $('#pTar').placeholder=p.tarjeta?'Ya tiene tarjeta (lee otra para cambiar)':'Sin tarjeta'; window.scrollTo({top:0,behavior:'smooth'}); } }
+  const ed=e.target.closest('[data-edit]'); if(ed){ const p=personas.find(x=>x.dni===ed.dataset.edit); if(p){ $('#pDni').value=p.dni; $('#pNom').value=p.nombre; window.scrollTo({top:0,behavior:'smooth'}); } }
 });
 
 /* ---------- marcar ---------- */
@@ -216,13 +229,13 @@ async function procesar(p){
   try{
     const r=await api('marcar',Object.assign({labor:$('#labor').value.trim()||'SALA DE CIERRE',obs:$('#obs').value.trim(),por:cfg.por,refri:cfg.refri,umbral:cfg.umbral},p));
     if(r.tipo) $('#obs').value='';
-    if(r.noEncontrado) return nuevo(r);
+    if(r.noEncontrado){ nuevo(r); return r; }
     if(r.aviso){
       vibrar([80,60,80]);
       res(`<div class="res warn"><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><div style="margin-top:8px">⚠ ${esc(r.aviso)} ¿Qué hacemos?</div>
         <div class="row"><button class="btn ghost" id="avNo">Nada, fue error</button><button class="btn ${r.accion==='salida'?'r':'g'}" id="avSi">Marcar ${r.accion.toUpperCase()}</button></div></div>`);
       $('#avNo').onclick=()=>res(''); $('#avSi').onclick=()=>{ ocupado=false; procesar(Object.assign({},p,{forzar:true})); };
-      return;
+      return r;
     }
     if(r.tipo==='ingreso'){ vibrar(150);
       res(`<div class="res ing"><div class="big">✔ INGRESO ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><button class="btn wbtn" id="undo">Deshacer</button></div>`);
@@ -240,9 +253,10 @@ async function procesar(p){
         }catch(e){ toast(e.message); $('#refTxt').textContent=''; }
       });
     }
-    $('#undo').onclick=async()=>{ try{ await api('deshacer',{id:r.id,tipo:r.tipo}); res('<div class="res warn">'+(r.tipo==='ingreso'?'Ingreso':'Salida')+' de '+esc(r.nombre)+' anulado.</div>'); ultimaTar={s:'',t:0}; refrescar(true);}catch(e){toast(e.message);} };
+    $('#undo').onclick=async()=>{ try{ await api('deshacer',{id:r.id,tipo:r.tipo}); res('<div class="res warn">'+(r.tipo==='ingreso'?'Ingreso':'Salida')+' de '+esc(r.nombre)+' anulado.</div>'); ultimoCod={c:'',t:0}; refrescar(true);}catch(e){toast(e.message);} };
     refrescar(true);
-  }catch(e){ res('<div class="res warn">'+esc(e.message)+'</div>'); }
+    return r;
+  }catch(e){ res('<div class="res warn">'+esc(e.message)+'</div>'); return {error:e.message}; }
   finally{ ocupado=false; }
 }
 function nuevo(r){
@@ -272,64 +286,124 @@ async function salidaTodos(){
 const dniGo=()=>{ const d=$('#dniIn').value.replace(/\D/g,''); if(d.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; } $('#dniIn').value=''; $('#dniIn').blur(); procesar({dni:d}); };
 $('#dniGo').onclick=dniGo; $('#dniIn').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); dniGo(); } };
 
-/* ---------- NFC del celular ---------- */
-let lector=null, ultimaTar={s:'',t:0}, modoAsignar=false;
-const pillNfc=(txt,tipo)=>{ const p=$('#pillNfc'); p.className='pill show '+tipo; p.innerHTML=txt; };
-async function iniciarNfc(auto){
-  if(!('NDEFReader' in window)){ if(!auto) pillNfc('Este celular no permite NFC desde la app. Abre la app con <b>Chrome</b> en Android y revisa que el NFC esté encendido.','warn'); return; }
-  if(lector) return;
-  try{
-    if(auto){ const st=await navigator.permissions.query({name:'nfc'}).catch(()=>null); if(!st||st.state!=='granted') return; }
-    lector=new NDEFReader(); const ctl=new AbortController();
-    await lector.scan({signal:ctl.signal});
-    lector._ctl=ctl;
-    lector.onreading=e=>leida(e.serialNumber);
-    lector.onreadingerror=()=>{ vibrar([200]); toast('No se pudo leer esa tarjeta por NFC. Usa la foto del DNI o escríbelo.'); };
-    ls.set('nfc','1'); $('#bNfc').classList.add('on');
-    pillNfc('📶 NFC activo: acerca la tarjeta a la parte de atrás del celular.','ok');
-  }catch(e){
-    lector=null;
-    if(e.name==='NotAllowedError') pillNfc('Permiso de NFC negado. Actívalo en los permisos del sitio en Chrome.','warn');
-    else if(e.name==='NotSupportedError') pillNfc('El NFC está apagado o este celular no lo tiene. Enciéndelo en Ajustes del celular.','warn');
-    else pillNfc('No se pudo iniciar el NFC: '+esc(e.message),'warn');
+/* ---------- Escáner de tarjeta (código de barras + número impreso) ---------- */
+let stream=null, scanOn=false, loopT=null, detector=null, zx=null, tessW=null, tessP=null, ultimoCod={c:'',t:0}, pausaHasta=0, ocrOcupado=false, ultOcr=0, luz=false;
+const cnv=document.createElement('canvas'), ctx=cnv.getContext('2d',{willReadFrequently:true});
+const TXT_GUIA='Pon el código de barras y el número dentro del recuadro';
+const setTxt=t=>{ $('#scanTxt').textContent=t; };
+function cargarScript(src){ return new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>no(new Error('sin señal')); document.head.appendChild(s); }); }
+// De un texto leído saca el DNI: primero uno que exista en BASE DATOS; si no, un número de 8 o 9 dígitos
+function elegir(texto, soloConocidos){
+  const nums=String(texto||'').match(/\d{8,14}/g)||[];
+  for(const n of nums){ const k=personas.find(p=>p.dni===n||(n.length>9&&n.includes(p.dni))); if(k) return k.dni; }
+  if(soloConocidos) return null;
+  return nums.find(x=>x.length===8||x.length===9)||null;
+}
+async function cargarZX(){
+  if(zx) return; await cargarScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js');
+  const h=new Map(), F=ZXing.BarcodeFormat; h.set(ZXing.DecodeHintType.TRY_HARDER,true);
+  h.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[F.CODE_128,F.CODE_39,F.CODE_93,F.ITF,F.CODABAR,F.EAN_13,F.EAN_8]);
+  const r=new ZXing.MultiFormatReader(); r.setHints(h); zx=r;
+}
+function zxLeer(){ try{ const b=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(cnv))); return elegir(zx.decodeWithState(b).getText(),false); }catch(e){ return null; } }
+function cargarTess(){
+  if(tessP) return tessP;
+  tessP=(async()=>{ await cargarScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+    const w=await Tesseract.createWorker('eng'); await w.setParameters({tessedit_char_whitelist:'0123456789',tessedit_pageseg_mode:'11'}); tessW=w; })();
+  tessP.catch(()=>{ tessP=null; }); return tessP;
+}
+// Recorta del video solo lo que está dentro del recuadro verde (un poco más)
+function recorte(v){
+  const vw=v.videoWidth, vh=v.videoHeight, cw=v.clientWidth, ch=v.clientHeight, k=Math.max(cw/vw,ch/vh);
+  const ox=(vw*k-cw)/2, oy=(vh*k-ch)/2, m=$('.marco').getBoundingClientRect(), vb=v.getBoundingClientRect();
+  let x=(m.left-vb.left+ox)/k, y=(m.top-vb.top+oy)/k, w=m.width/k, h=m.height/k;
+  x-=w*.06; y-=h*.12; w*=1.12; h*=1.24;
+  x=Math.max(0,x); y=Math.max(0,y); w=Math.min(vw-x,w); h=Math.min(vh-y,h);
+  return {x,y,w,h};
+}
+async function abrirScanner(){
+  if(!listo()){ toast('Primero configura la app en Ajustes.'); return; }
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('Este navegador no deja usar la cámara. Abre la app con Chrome.'); return; }
+  $('#scan').hidden=false; $('#scanRes').innerHTML=''; setTxt('Abriendo cámara…');
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}}); }
+  catch(e){ $('#scan').hidden=true; toast(e.name==='NotAllowedError'?'Permiso de cámara negado. Actívalo en Chrome: candado → Permisos → Cámara.':'No se pudo abrir la cámara.'); return; }
+  const v=$('#vid'); v.srcObject=stream; try{ await v.play(); }catch(e){}
+  const tr=stream.getVideoTracks()[0], caps=tr.getCapabilities?tr.getCapabilities():{};
+  $('#sLuz').hidden=!caps.torch; luz=false;
+  try{ if(caps.focusMode&&caps.focusMode.includes('continuous')) await tr.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch(e){}
+  if(!detector && 'BarcodeDetector' in window){
+    try{ const sop=await BarcodeDetector.getSupportedFormats(); const f=sop.filter(x=>['code_128','code_39','code_93','codabar','itf','ean_13','ean_8','upc_a','upc_e'].includes(x)); if(f.length) detector=new BarcodeDetector({formats:f}); }catch(e){ detector=null; }
   }
+  if(!detector) cargarZX().catch(()=>{});
+  cargarTess().catch(()=>{});
+  scanOn=true; pausaHasta=0; setTxt(TXT_GUIA); bucle();
 }
-function leida(serial){
-  const s=String(serial||'').toUpperCase().replace(/[^0-9A-Z]/g,'');
-  if(!s){ toast('La tarjeta no tiene número de serie legible. Usa la foto o el DNI.'); return; }
-  if(modoAsignar){ modoAsignar=false; $('#pTar').value=s; $('#pLeer').textContent='📶 Leer'; vibrar(120); toast('Tarjeta leída ✔'); return; }
-  const now=Date.now(); if(s===ultimaTar.s && now-ultimaTar.t<6000) return; ultimaTar={s,t:now};
-  document.querySelector('nav button[data-tab="marcar"]').click();
-  procesar({tarjeta:s});
+function cerrarScanner(){
+  scanOn=false; clearTimeout(loopT);
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  $('#vid').srcObject=null; $('#scan').hidden=true;
 }
-$('#bNfc').onclick=()=>iniciarNfc(false);
-$('#pLeer').onclick=async()=>{ await iniciarNfc(false); if(!lector) return; modoAsignar=true; $('#pLeer').textContent='Acerca…'; toast('Acerca la tarjeta al celular'); };
-if(ls.get('nfc','')==='1') iniciarNfc(true);
-
-/* ---------- Foto del DNI (lectura en el mismo celular) ---------- */
-let tess=null;
-function cargarTess(){ if(tess) return tess; tess=new Promise((ok,no)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; s.onload=()=>ok(window.Tesseract); s.onerror=()=>{tess=null;no(new Error('No se pudo cargar el lector de fotos. Revisa la señal.'));}; document.head.appendChild(s); }); return tess; }
-$('#fotoIn').onchange=async()=>{
-  const f=$('#fotoIn').files[0]; $('#fotoIn').value=''; if(!f) return;
-  res('<div class="res wait"><span class="spin"></span>Leyendo el DNI de la foto… <span id="pct"></span></div>');
+async function bucle(){
+  if(!scanOn) return;
+  const v=$('#vid');
+  if(v.readyState>=2 && v.videoWidth && Date.now()>pausaHasta && !ocupado){
+    const r=recorte(v); cnv.width=Math.round(r.w); cnv.height=Math.round(r.h);
+    ctx.drawImage(v,r.x,r.y,r.w,r.h,0,0,cnv.width,cnv.height);
+    let cod=null;
+    try{
+      if(detector){ const bs=await detector.detect(cnv); for(const b of bs){ cod=elegir(b.rawValue,false); if(cod) break; } }
+      else if(zx) cod=zxLeer();
+    }catch(e){}
+    if(cod) await encontrado(cod,'código de barras');
+    else if(tessW && !ocrOcupado && Date.now()-ultOcr>900){ ultOcr=Date.now(); leerNumero(); }
+  }
+  if(scanOn) loopT=setTimeout(bucle,150);
+}
+// Prepara la franja del número: gris, quita sombras (divide por el fondo difuminado) y deja negro sobre blanco
+function limpiar(src){
+  const y0=Math.round(src.height*.45), w=src.width, h=src.height-y0, k=Math.min(1,1000/w);
+  const W=Math.round(w*k), H=Math.round(h*k);
+  const a=document.createElement('canvas'); a.width=W; a.height=H; const ga=a.getContext('2d',{willReadFrequently:true});
+  ga.filter='grayscale(1)'; ga.drawImage(src,0,y0,w,h,0,0,W,H);
+  const b=document.createElement('canvas'); b.width=W; b.height=H; const gb=b.getContext('2d',{willReadFrequently:true});
+  gb.filter='blur('+Math.max(8,Math.round(H/7))+'px)'; gb.drawImage(a,0,0);
+  const A=ga.getImageData(0,0,W,H), B=gb.getImageData(0,0,W,H).data, d=A.data;
+  for(let i=0;i<d.length;i+=4){ const v=Math.min(255,d[i]/Math.max(1,B[i])*255); const t=v>200?255:0; d[i]=d[i+1]=d[i+2]=t; d[i+3]=255; }
+  ga.filter='none'; ga.putImageData(A,0,0); return a;
+}
+// Si el código está rayado, lee el número impreso. Solo acepta DNIs que están en BASE DATOS.
+async function leerNumero(){
+  ocrOcupado=true;
   try{
-    const T=await cargarTess();
-    const {data}=await T.recognize(f,'eng',{logger:m=>{ if(m.status==='recognizing text'&&$('#pct')) $('#pct').textContent=Math.round(m.progress*100)+'%'; }});
-    const txt=(data.text||'').replace(/[Oo]/g,'0').replace(/[Il|]/g,'1');
-    const cands=[...new Set((txt.match(/(?<!\d)\d{8,9}(?!\d)/g)||[]))];
-    const conocidos=cands.filter(c=>personas.some(p=>p.dni===c));
-    if(conocidos.length===1 || cands.length===1) return procesar({dni:conocidos[0]||cands[0]});
-    if(!cands.length){ res('<div class="res warn">No encontré el DNI en la foto. Toma la foto más cerca, con buena luz y sin reflejo, o escribe el DNI.</div>'); return; }
-    res('<div class="res warn"><div class="nm">¿Cuál es el DNI?</div>'+cands.slice(0,5).map(c=>`<button class="btn ghost full" style="margin-top:8px" data-c="${c}">${c}</button>`).join('')+'</div>');
-    $('#res').querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>procesar({dni:b.dataset.c}));
-  }catch(e){ res('<div class="res warn">'+esc(e.message||'No se pudo leer la foto.')+'</div>'); }
-};
-
+    const c=limpiar(cnv);
+    const {data}=await tessW.recognize(c);
+    const t=data.text||''; const cod=elegir(t,true)||elegir(t.replace(/\s+/g,''),true);
+    if(cod && scanOn && Date.now()>pausaHasta && !ocupado) await encontrado(cod,'número impreso');
+  }catch(e){}
+  ocrOcupado=false;
+}
+async function encontrado(cod,via){
+  const now=Date.now(); if(cod===ultimoCod.c && now-ultimoCod.t<8000) return;
+  ultimoCod={c:cod,t:now}; pausaHasta=now+60000; vibrar(60);
+  setTxt('Leído '+cod+' ('+via+')… registrando');
+  const r=await procesar({dni:cod});
+  if(!scanOn) return;
+  if(r && r.tipo){
+    ultimoCod.t=Date.now();
+    $('#scanRes').innerHTML=`<div class="res ${r.tipo==='ingreso'?'ing':'sal'}"><div class="big">✔ ${r.tipo==='ingreso'?'INGRESO':'SALIDA'} ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">${r.tipo==='salida'?'Trabajó '+horasTxt(r.horas)+' h'+(r.refri?' (descontado refrigerio '+r.refri+' min)':''):'DNI '+esc(r.dni)}</div></div>`;
+    setTxt('Listo. Pasa la siguiente tarjeta'); pausaHasta=Date.now()+2000;
+    setTimeout(()=>{ if(scanOn && Date.now()-ultimoCod.t>3000){ $('#scanRes').innerHTML=''; setTxt(TXT_GUIA); } },4000);
+  } else { cerrarScanner(); }   // aviso, persona nueva o error: se atiende en la pantalla principal
+}
+$('#bScan').onclick=abrirScanner;
+$('#sCerrar').onclick=cerrarScanner;
+$('#sDni').onclick=()=>{ cerrarScanner(); $('#dniIn').focus(); };
+$('#sLuz').onclick=async()=>{ try{ luz=!luz; await stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:luz}]}); $('#sLuz').textContent=luz?'🔦 Apagar':'🔦 Luz'; }catch(e){ toast('Este celular no deja usar la linterna aquí.'); } };
 /* ---------- personal ---------- */
 $('#pGuardar').onclick=async()=>{
   const dni=$('#pDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
   $('#pGuardar').disabled=true;
-  try{ const r=await api('guardarPersona',{dni,nombre:$('#pNom').value,tarjeta:$('#pTar').value}); toast((r.nueva?'Agregado: ':'Actualizado: ')+r.persona.nombre); $('#pDni').value='';$('#pNom').value='';$('#pTar').value=''; refrescar(true); }
+  try{ const r=await api('guardarPersona',{dni,nombre:$('#pNom').value}); toast((r.nueva?'Agregado: ':'Actualizado: ')+r.persona.nombre); $('#pDni').value='';$('#pNom').value=''; refrescar(true); }
   catch(e){ toast(e.message); }
   $('#pGuardar').disabled=false;
 };
