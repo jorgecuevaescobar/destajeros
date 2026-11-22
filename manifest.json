@@ -1,7 +1,7 @@
 {
-  "name": "Destajeros – Sala de cierre CAC",
-  "short_name": "Destajeros",
-  "description": "Registro de ingreso y salida de destajeros",
+  "name": "ASISTENCIA CIERRE CAC",
+  "short_name": "Asistencia CAC",
+  "description": "Asistencia de destajeros y jornales - Sala de cierre CAC",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

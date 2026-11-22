@@ -4,19 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#17322a">
-<title>Destajeros CAC</title>
+<title>ASISTENCIA CIERRE CAC</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <style>
-  :root{--bg:#f4f5f2;--card:#fff;--ink:#1d2321;--muted:#6b736f;--line:#e1e4df;--green:#1f7a4d;--green-bg:#e3f2ea;--red:#b23a2e;--amber:#9a6a00;--amber-bg:#fff4d6;--blue:#1f4f7a}
+  :root{--bg:#f4f5f2;--card:#fff;--ink:#1d2321;--muted:#6b736f;--line:#e1e4df;--green:#1f7a4d;--green-bg:#e3f2ea;--red:#b23a2e;--red-bg:#fbe9e6;--amber:#9a6a00;--amber-bg:#fff4d6;--blue:#1f4f7a}
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Roboto,sans-serif;-webkit-text-size-adjust:100%}
-  header{background:#17322a;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 0}
-  header h1{margin:0;font-size:19px}
+  header{background:#17322a;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 0;position:sticky;top:0;z-index:10}
+  header h1{margin:0;font-size:18px;letter-spacing:.03em}
   header .sub{font-size:13px;opacity:.75}
-  nav{display:flex;margin-top:10px}
-  nav button{flex:1;background:none;border:0;color:#cfe0d8;font:600 15px system-ui;padding:12px 4px;border-bottom:3px solid transparent}
+  nav{display:flex;margin-top:8px}
+  nav button{flex:1;background:none;border:0;color:#cfe0d8;font:600 14px system-ui;padding:11px 2px;border-bottom:3px solid transparent}
   nav button.on{color:#fff;border-bottom-color:#7fd1a6}
   main{padding:14px 14px 100px;max-width:640px;margin:0 auto}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
@@ -25,59 +28,71 @@
   .row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
   .btn{border:0;border-radius:12px;padding:13px 14px;font:700 15px system-ui;background:#e9ece8;color:var(--ink);cursor:pointer}
   .btn.full{width:100%}.btn.g{background:var(--green);color:#fff}.btn.r{background:var(--red);color:#fff}.btn.b{background:var(--blue);color:#fff}
-  .btn.ghost{background:none;border:1px solid var(--line)}.btn:disabled{opacity:.45}
+  .btn.ghost{background:none;border:1px solid var(--line)}.btn:disabled{opacity:.45}.btn.sm{padding:9px 10px;font-size:14px}
   .scanbtn{width:100%;border:0;border-radius:18px;padding:26px 12px;margin-bottom:12px;background:var(--green);color:#fff;font:800 21px system-ui;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 14px #1f7a4d40}
   .scanbtn .i{font-size:40px}.scanbtn small{font:500 13px system-ui;opacity:.85}
   .dnibox input{font-size:24px;letter-spacing:.12em;text-align:center;padding:14px}
   .dnibox .btn{flex:0 0 84px;font-size:18px}
   .opts{padding:10px 12px}.opts summary{font-size:14px;color:var(--muted);cursor:pointer}
-  .scan{position:fixed;inset:0;background:#000;z-index:40;display:flex;flex-direction:column}
-  .scan[hidden]{display:none}
-  .scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .scan .guia{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-  .scan .marco{width:86%;max-width:520px;aspect-ratio:2.2/1;border:3px solid #7fd1a6;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.45)}
-  .scan .txt{color:#fff;margin-top:14px;font-size:15px;text-align:center;padding:0 20px;text-shadow:0 1px 3px #000}
-  .scanres{position:absolute;left:12px;right:12px;top:calc(14px + env(safe-area-inset-top))}
-  .scanbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.7))}
-  .scanbar .btn{flex:1}
-  .bigbtn{flex:1;border:0;border-radius:16px;padding:20px 8px;font:700 16px system-ui;background:#fff;border:2px solid #cfe3d8;color:var(--ink)}
-  .bigbtn .i{font-size:34px;display:block;margin-bottom:4px}
-  .bigbtn.on{background:var(--green-bg);border-color:var(--green)}
-  .pill{font-size:13px;padding:8px 12px;border-radius:10px;margin-bottom:12px;display:none}
-  .pill.show{display:block}.pill.ok{background:var(--green-bg);color:var(--green)}.pill.warn{background:var(--amber-bg);color:var(--amber)}
+  .pill{font-size:13px;padding:10px 12px;border-radius:10px;margin-bottom:12px;display:none}
+  .pill.show{display:block}.pill.warn{background:var(--amber-bg);color:var(--amber)}
   .res{border-radius:16px;padding:18px 16px;margin-bottom:12px;color:#fff}
   .res.ing{background:var(--green)}.res.sal{background:var(--red)}.res.warn{background:#fff;color:var(--ink);border:2px solid var(--amber)}.res.wait{background:#fff;color:var(--ink);border:1px solid var(--line)}
-  .res .big{font-size:30px;font-weight:800}.res .nm{font-size:21px;font-weight:700;margin-top:4px}.res .dt{opacity:.9;font-size:14px;margin-top:2px}
+  .res .big{font-size:28px;font-weight:800}.res .nm{font-size:20px;font-weight:700;margin-top:4px}.res .dt{opacity:.9;font-size:14px;margin-top:2px}
   .res .btn{margin-top:12px}.res .wbtn{background:none;border:1px solid #ffffff90;color:#fff}
-  .sec{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 2px 6px}
+  .sec{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 2px 6px;display:flex;justify-content:space-between;align-items:center}
   .list{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-  .item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}
-  .item:first-child{border-top:0}.item.in{background:var(--green-bg)}
+  .item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+  .item:first-child{border-top:0}.item.in{background:var(--green-bg)}.item.out{background:#f7f7f5}
   .who{flex:1;min-width:0}.name{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{font-size:13px;color:var(--muted)}
-  .act{flex:none;min-width:100px}
+  .act{flex:none;min-width:92px}
+  .edit{flex:none;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:18px}
   .empty{padding:16px;text-align:center;color:var(--muted);font-size:14px}
   .hint{font-size:13px;color:var(--muted)}
-  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1d2321;color:#fff;padding:11px 14px;border-radius:10px;font-size:14px;display:none;z-index:20;max-width:92vw}
+  .stats{display:flex;gap:8px;margin-bottom:12px}.stats div{flex:1;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}
+  .stats b{display:block;font-size:22px}.stats span{font-size:12px;color:var(--muted)}
+  .seg{display:flex;background:#e9ece8;border-radius:12px;padding:4px;margin-bottom:12px}
+  .seg button{flex:1;border:0;background:none;padding:10px;border-radius:9px;font:700 14px system-ui;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px #0002}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.chips button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;font:600 13px system-ui}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1d2321;color:#fff;padding:11px 14px;border-radius:10px;font-size:14px;display:none;z-index:60;max-width:92vw}
   .toast.show{display:block}
   .spin{display:inline-block;width:18px;height:18px;border:3px solid #cfd6d2;border-top-color:var(--green);border-radius:50%;animation:s 1s linear infinite;vertical-align:-3px;margin-right:8px}
   @keyframes s{to{transform:rotate(360deg)}}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .modal.show{display:flex}
+  .sheet{background:#fff;width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+  .sheet h2{margin:0 0 4px;font-size:18px}.sheet .actions{display:flex;gap:8px;margin-top:16px}.sheet .actions .btn{flex:1}
+  .scan{position:fixed;inset:0;background:#000;z-index:40}
+  .scan[hidden]{display:none}
+  .scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .scan .guia{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+  .scan .marco{width:88%;max-width:560px;aspect-ratio:1.586/1;border:3px solid #7fd1a6;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);position:relative}
+  .scan .marco:after{content:"";position:absolute;left:8%;right:8%;bottom:12%;height:22%;border:2px dashed #ffffffaa;border-radius:8px}
+  .scan .txt{color:#fff;margin-top:14px;font-size:15px;text-align:center;padding:0 20px;text-shadow:0 1px 3px #000}
+  .scanres{position:absolute;left:12px;right:12px;top:calc(14px + env(safe-area-inset-top))}
+  .scanbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:12px 12px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.75))}
+  .scanbar .btn{flex:1;padding:13px 6px}
+  .ver{font-size:12px;color:var(--muted);text-align:center;margin-top:18px}
 </style>
 </head>
 <body>
 <header>
-  <h1>Destajeros · Sala de cierre</h1>
+  <h1>ASISTENCIA CIERRE CAC</h1>
   <div class="sub" id="hoy"></div>
   <nav>
-    <button data-tab="marcar" class="on">Marcar</button>
+    <button data-tab="destajo" class="on">Destajeros</button>
+    <button data-tab="jornal">Jornales</button>
     <button data-tab="personal">Personal</button>
     <button data-tab="ajustes">Ajustes</button>
   </nav>
 </header>
 
 <main>
-  <!-- MARCAR -->
-  <section id="t-marcar">
-    <div class="pill warn" id="pillConf">Falta configurar la app. Ve a <b>Ajustes</b>.</div>
+  <div class="pill warn" id="pillConf">Esta app aún no está conectada. Ábrela con el link que te envió Jorge.</div>
+
+  <!-- DESTAJEROS -->
+  <section id="t-destajo">
     <button class="scanbtn" id="bScan"><span class="i">📷</span>Escanear tarjeta<small>Código de barras o número impreso</small></button>
     <div class="card row dnibox">
       <input id="dniIn" inputmode="numeric" maxlength="9" placeholder="Escribe el DNI" autocomplete="off">
@@ -90,68 +105,104 @@
       <input id="labor" list="labores" placeholder="SALA DE CIERRE">
       <datalist id="labores"><option value="SALA DE CIERRE"><option value="APOYO A SALA CIERRE"><option value="MONDINI"><option value="ACONDICIONAMIENTO"><option value="LIMPIEZA PROFUNDA SALAS PROCESO"></datalist>
       <label>Observación (opcional, se guarda con la próxima marca)</label>
-      <input id="obs" list="obsl" placeholder="Ej: 45 MIN DE COMIDA, JORNALERO">
-      <datalist id="obsl"><option value="45 MIN DE COMIDA"><option value="50 MIN DE COMIDA"><option value="JORNALERO"></datalist>
+      <input id="obs" list="obsl" placeholder="Ej: JORNALERO">
+      <datalist id="obsl"><option value="JORNALERO"><option value="45 MIN DE COMIDA"></datalist>
     </details>
-    <div class="sec" id="secSala">En sala (0)</div>
+    <div class="sec"><span id="secSala">En sala (0)</span></div>
     <div id="sala"></div>
     <div style="margin-top:10px" id="zonaTodos"></div>
     <div class="sec">Últimas marcas de hoy</div>
     <div id="ultimas"></div>
   </section>
 
+  <!-- JORNALES -->
+  <section id="t-jornal" hidden>
+    <div class="card">
+      <div class="row">
+        <button class="btn ghost sm" id="jPrev" style="flex:0 0 46px">‹</button>
+        <input type="date" id="jFecha">
+        <button class="btn ghost sm" id="jNext" style="flex:0 0 46px">›</button>
+      </div>
+      <label>Hora a registrar</label>
+      <div class="row">
+        <input type="time" id="jHora">
+        <button class="btn ghost sm" id="jAhora" style="flex:0 0 96px">Ahora</button>
+      </div>
+      <div class="hint" style="margin-top:6px" id="jHoraTxt">Vacío = hora actual. Pon una hora si llegaron antes que el supervisor.</div>
+    </div>
+    <div class="stats"><div><b id="jPres">0</b><span>En sala</span></div><div><b id="jSal">0</b><span>Salieron</span></div><div><b id="jFal">0</b><span>Faltan</span></div></div>
+    <input id="jBuscar" placeholder="🔍 Buscar" autocomplete="off" style="margin-bottom:8px">
+    <div id="jLista"></div>
+    <div style="margin-top:10px" class="row">
+      <button class="btn g" id="jTodosIn">Ingreso a los que faltan</button>
+      <button class="btn r" id="jTodosOut">Salida a todos</button>
+    </div>
+  </section>
+
   <!-- PERSONAL -->
   <section id="t-personal" hidden>
+    <div class="seg" id="pSeg"><button data-t="destajo" class="on">Destajeros</button><button data-t="jornal">Jornales</button></div>
     <div class="card">
-      <b>Agregar o actualizar destajero</b>
+      <b id="pTitulo">Agregar o actualizar destajero</b>
       <label>DNI o C.E.</label><input id="pDni" inputmode="numeric" maxlength="9" autocomplete="off">
-      <label>Nombre y apellido</label><input id="pNom" autocomplete="off">
+      <label>Apellidos y nombres</label><input id="pNom" autocomplete="off">
+      <div id="pCargoBox" hidden><label>Cargo / área</label><input id="pCargo" autocomplete="off"></div>
       <div style="height:12px"></div>
       <button class="btn g full" id="pGuardar">Guardar</button>
     </div>
     <div class="sec" id="pCount">Lista</div>
     <input id="pBuscar" placeholder="🔍 Buscar nombre o DNI" autocomplete="off" style="margin-bottom:8px">
     <div id="pLista"></div>
-    <p class="hint">Para corregir horas o borrar un registro, ábrelo en la hoja de Google (Ajustes → Abrir hoja).</p>
   </section>
 
   <!-- AJUSTES -->
   <section id="t-ajustes" hidden>
     <div class="card">
-      <b>Conexión con la hoja de Google</b>
-      <label>URL de la aplicación web (Apps Script)</label>
-      <input id="cUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
-      <label>Clave</label><input id="cClave" autocomplete="off">
-      <label>Tu nombre (queda en el registro)</label><input id="cPor" placeholder="Ej: Supervisor Luis" autocomplete="off">
-      <div class="row"><div><label>Refrigerio a descontar (min)</label><input id="cRefri" inputmode="numeric" placeholder="45"></div>
-      <div><label>Solo si trabajó más de (horas)</label><input id="cUmbral" inputmode="decimal" placeholder="6"></div></div>
+      <b>📊 Reportes en Excel</b>
+      <div class="seg" id="rSeg" style="margin-top:10px"><button data-t="destajo" class="on">Destajeros</button><button data-t="jornal">Jornales</button></div>
+      <div class="row"><div><label>Desde</label><input type="date" id="rDesde"></div><div><label>Hasta</label><input type="date" id="rHasta"></div></div>
+      <div class="chips"><button data-r="hoy">Hoy</button><button data-r="ayer">Ayer</button><button data-r="semana">Esta semana</button><button data-r="mes">Este mes</button><button data-r="mesant">Mes pasado</button></div>
       <div style="height:12px"></div>
-      <button class="btn g full" id="cGuardar">Guardar y probar</button>
+      <button class="btn b full" id="rGo">⬇ Descargar reporte</button>
+      <div class="hint" id="rInfo" style="margin-top:8px"></div>
     </div>
     <div class="card">
-      <b>Para tus supervisores</b>
-      <div class="hint">Envía este link por WhatsApp. Al abrirlo, la app queda configurada sola.</div>
-      <div style="height:10px"></div>
-      <button class="btn b full" id="cCompartir">Compartir link de configuración</button>
+      <b>Mis datos</b>
+      <label>Tu nombre (queda en cada marca)</label><input id="cPor" placeholder="Ej: Supervisor Luis" autocomplete="off">
+      <div class="row"><div><label>Refrigerio a descontar (min)</label><input id="cRefri" inputmode="numeric"></div>
+      <div><label>Si trabajó más de (horas)</label><input id="cUmbral" inputmode="decimal"></div></div>
+      <div style="height:12px"></div>
+      <button class="btn g full" id="cGuardar">Guardar</button>
     </div>
-    <div class="card" id="cardInstalar" hidden>
-      <b>Instalar en este celular</b>
+    <div class="card">
+      <b>Compartir con supervisores</b>
+      <div class="hint">Envía este link por WhatsApp. Al abrirlo con Chrome la app queda lista.</div>
       <div style="height:10px"></div>
-      <button class="btn g full" id="bInstalar">⬇ Instalar app</button>
+      <button class="btn b full" id="cCompartir">Compartir app</button>
     </div>
-    <div class="card"><a id="linkHoja" class="btn ghost full" style="display:block;text-align:center;text-decoration:none;color:inherit" target="_blank" rel="noopener">📊 Abrir hoja de Google (Excel)</a></div>
+    <div class="card" id="cardInstalar" hidden><button class="btn g full" id="bInstalar">⬇ Instalar app en este celular</button></div>
+    <a id="linkHoja" class="btn ghost full" style="display:block;text-align:center;text-decoration:none;color:inherit" target="_blank" rel="noopener">📄 Ver hoja de registros en Google</a>
+    <div class="card" id="conexion" hidden style="margin-top:12px">
+      <b>Conexión (soporte)</b>
+      <label>URL</label><input id="cUrl" autocomplete="off"><label>Clave</label><input id="cClave" autocomplete="off">
+      <div style="height:10px"></div><button class="btn full" id="cConectar">Conectar</button>
+    </div>
+    <div class="ver" id="ver">ASISTENCIA CIERRE CAC · v4</div>
   </section>
 </main>
+
 <div class="scan" id="scan" hidden>
   <video id="vid" playsinline muted></video>
-  <div class="guia"><div class="marco"></div><div class="txt" id="scanTxt">Pon el código de barras y el número dentro del recuadro</div><div class="txt" style="font-size:13px;opacity:.8">Número abajo, con buena luz</div></div>
+  <div class="guia"><div class="marco"></div><div class="txt" id="scanTxt">Encuadra toda la tarjeta</div><div class="txt" style="font-size:13px;opacity:.85">El número debe quedar en la franja punteada · buena luz</div></div>
   <div class="scanres" id="scanRes"></div>
   <div class="scanbar">
-    <button class="btn" id="sLuz" hidden>🔦 Luz</button>
-    <button class="btn" id="sDni">⌨ Escribir DNI</button>
+    <button class="btn" id="sLuz" hidden>🔦</button>
+    <button class="btn" id="sFoto">📸 Foto</button>
+    <button class="btn" id="sDni">⌨ DNI</button>
     <button class="btn r" id="sCerrar">Cerrar</button>
   </div>
 </div>
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -159,84 +210,100 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
 const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes());};
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const dmy=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'';
 const dur=x=>{if(x==null||x<0)return'—';const m=Math.round(x/60000);return Math.floor(m/60)+':'+pad(m%60);};
-const horasTxt=h=>{const m=Math.round(Number(h)*60);return Math.floor(m/60)+':'+pad(m%60);};
+const horasTxt=h=>{if(h==null)return'—';const m=Math.round(Number(h)*60);return Math.floor(m/60)+':'+pad(m%60);};
 const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-const d0=new Date(); $('#hoy').textContent=(DIAS[d0.getDay()]+' '+d0.getDate()+' de '+MES[d0.getMonth()]).replace(/^./,c=>c.toUpperCase());
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);}
+const largo=d=>(DIAS[d.getDay()]+' '+d.getDate()+' de '+MES[d.getMonth()]).replace(/^./,c=>c.toUpperCase());
+$('#hoy').textContent=largo(new Date());
+function toast(m,ms){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms||3200);}
 function vibrar(p){try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+function modal(html){ $('#sheet').innerHTML=html; $('#modal').classList.add('show'); }
+function cerrarModal(){ $('#modal').classList.remove('show'); }
+$('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') cerrarModal(); });
+function confirmar(titulo,texto,ok,cls){ return new Promise(r=>{ modal(`<h2>${esc(titulo)}</h2><div class="hint">${esc(texto)}</div><div class="actions"><button class="btn ghost" id="cfNo">Cancelar</button><button class="btn ${cls||'g'}" id="cfSi">${esc(ok)}</button></div>`); $('#cfNo').onclick=()=>{cerrarModal();r(false);}; $('#cfSi').onclick=()=>{cerrarModal();r(true);}; }); }
 
 /* ---------- configuración ---------- */
 let cfg={url:ls.get('url',''),clave:ls.get('clave',''),por:ls.get('por',''),refri:ls.get('refri','45'),umbral:ls.get('umbral','6')};
-(function leerLink(){
-  const q=new URLSearchParams(location.search);
-  if(q.get('u')){ cfg.url=q.get('u'); cfg.clave=q.get('k')||''; ls.set('url',cfg.url); ls.set('clave',cfg.clave); if(q.get('r')){ cfg.refri=q.get('r'); ls.set('refri',cfg.refri); } if(q.get('h')){ cfg.umbral=q.get('h'); ls.set('umbral',cfg.umbral); } history.replaceState(null,'',location.pathname); setTimeout(()=>toast('App configurada ✔'),300); }
-})();
-$('#cUrl').value=cfg.url; $('#cClave').value=cfg.clave; $('#cPor').value=cfg.por; $('#cRefri').value=cfg.refri; $('#cUmbral').value=cfg.umbral;
-$('#labor').value=ls.get('labor',''); $('#labor').onchange=()=>ls.set('labor',$('#labor').value.trim());
+(function(){ const q=new URLSearchParams(location.search);
+  if(q.get('u')){ cfg.url=q.get('u'); cfg.clave=q.get('k')||''; ls.set('url',cfg.url); ls.set('clave',cfg.clave);
+    if(q.get('r')){cfg.refri=q.get('r');ls.set('refri',cfg.refri);} if(q.get('h')){cfg.umbral=q.get('h');ls.set('umbral',cfg.umbral);}
+    history.replaceState(null,'',location.pathname); setTimeout(()=>toast('App lista ✔'),300); } })();
 const listo=()=>!!(cfg.url&&cfg.clave);
 $('#pillConf').classList.toggle('show',!listo());
+$('#cPor').value=cfg.por; $('#cRefri').value=cfg.refri; $('#cUmbral').value=cfg.umbral; $('#cUrl').value=cfg.url; $('#cClave').value=cfg.clave;
+$('#labor').value=ls.get('labor',''); const laborTxt=()=>{ $('#laborTxt').textContent=$('#labor').value.trim()||'SALA DE CIERRE'; }; laborTxt();
+$('#labor').addEventListener('input',()=>{ ls.set('labor',$('#labor').value.trim()); laborTxt(); });
 
 async function api(accion,datos){
-  if(!listo()) throw new Error('Falta configurar la app en Ajustes');
-  let r;
-  try{ r=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({clave:cfg.clave,accion},datos||{}))}); }
+  if(!listo()) throw new Error('La app no está conectada. Ábrela con el link de configuración.');
+  let r; try{ r=await fetch(cfg.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({clave:cfg.clave,accion,por:cfg.por,refri:cfg.refri,umbral:cfg.umbral},datos||{}))}); }
   catch(e){ throw new Error('Sin conexión. Revisa la señal o el WiFi.'); }
-  let j; try{ j=await r.json(); }catch(e){ throw new Error('La hoja no respondió bien. Revisa la URL en Ajustes.'); }
-  if(!j.ok) throw new Error(j.error||'Error');
-  return j;
+  let j; try{ j=await r.json(); }catch(e){ throw new Error('El servidor no respondió bien. Intenta otra vez.'); }
+  if(!j.ok) throw new Error(j.error||'Error'); return j;
 }
 
-/* ---------- estado ---------- */
-let personas=[],abiertas=[],ultimas=[],hojaUrl='';
-async function refrescar(silencio){
-  if(!listo()) return render();
-  try{ const j=await api('estado'); personas=j.personas; abiertas=j.abiertas; ultimas=j.ultimas; hojaUrl=j.hoja; render(); }
-  catch(e){ if(!silencio) toast(e.message); }
+/* ---------- datos en memoria + caché local (abre al instante) ---------- */
+const S={ destajo:{lista:[],mapa:new Map(),bv:'',abiertas:[],ultimas:[]}, jornal:{lista:[],mapa:new Map(),bv:'',abiertas:[],ultimas:[],delDia:[]} };
+let hojaUrl=ls.get('hoja','');
+function ponerBase(t,b){ const s=S[t]; s.bv=b.v; s.lista=b.lista.map(x=>({dni:x[0],nombre:x[1],cargo:x[2]||''})); s.mapa=new Map(s.lista.map(p=>[p.dni,p])); }
+['destajo','jornal'].forEach(t=>{ try{ const c=JSON.parse(ls.get('base_'+t,'null')); if(c) ponerBase(t,c); }catch(e){} });
+function aplicar(t,e){
+  if(!e) return; const s=S[t];
+  if(e.base){ ponerBase(t,e.base); ls.set('base_'+t,JSON.stringify(e.base)); }
+  if(e.abiertas) s.abiertas=e.abiertas; if(e.ultimas) s.ultimas=e.ultimas; if(e.delDia) s.delDia=e.delDia;
+  if(e.hoja){ hojaUrl=e.hoja; ls.set('hoja',hojaUrl); }
+  render();
 }
-setInterval(()=>{ if(document.visibilityState==='visible') refrescar(true); },30000);
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') refrescar(true); else cerrarScanner(); });
+let tab='destajo';
+async function refrescar(t,silencio){
+  t=t||(tab==='jornal'?'jornal':'destajo'); if(!listo()) return render();
+  try{ aplicar(t, await api('estado',{tipo:t,bv:S[t].bv,fecha:t==='jornal'?jFecha():undefined})); }catch(e){ if(!silencio) toast(e.message); }
+}
+setInterval(()=>{ if(document.visibilityState==='visible' && (tab==='destajo'||tab==='jornal')) refrescar(tab,true); },30000);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') refrescar(null,true); else cerrarScanner(); });
 
-function render(){
-  const enSala=new Set(abiertas.map(a=>a.dni));
-  $('#secSala').textContent='En sala ('+abiertas.length+')';
-  $('#sala').innerHTML='<div class="list">'+(abiertas.length?[...abiertas].sort((a,b)=>a.ingreso-b.ingreso).map(a=>`
-    <div class="item in"><div class="who"><div class="name">${esc(a.nombre)}</div><div class="meta">Entró ${hm(a.ingreso)} · lleva ${dur(Date.now()-a.ingreso)} h${a.labor?' · '+esc(a.labor):''}</div></div>
-    <button class="btn r act" data-dni="${esc(a.dni)}">SALIDA</button></div>`).join(''):'<div class="empty">Nadie en sala.</div>')+'</div>';
-  $('#zonaTodos').innerHTML=abiertas.length>1?'<button class="btn r full" id="bTodos">Marcar SALIDA a todos ('+abiertas.length+')</button>':'';
-  if($('#bTodos')) $('#bTodos').onclick=salidaTodos;
-  $('#ultimas').innerHTML='<div class="list">'+(ultimas.length?ultimas.map(e=>`<div class="item ${e.tipo==='Ingreso'?'in':''}"><div class="who"><div class="name">${esc(e.n)}</div><div class="meta">${e.tipo} ${hm(e.t)}${e.h!==''&&e.h!=null?' · '+horasTxt(e.h)+' h':''}</div></div></div>`).join(''):'<div class="empty">Aún no hay marcas hoy.</div>')+'</div>';
-  const pq=$('#pBuscar').value.trim().toLowerCase();
-  const pl=[...personas].filter(p=>!pq||p.nombre.toLowerCase().includes(pq)||p.dni.includes(pq)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-  $('#pCount').textContent='Lista ('+pl.length+')';
-  $('#pLista').innerHTML='<div class="list">'+(pl.length?pl.slice(0,40).map(p=>`<div class="item"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">DNI ${esc(p.dni)}</div></div><button class="btn ghost" data-edit="${esc(p.dni)}">Editar</button></div>`).join('')+(pl.length>40?'<div class="empty">'+(pl.length-40)+' más… escribe para buscar</div>':''):'<div class="empty">'+(personas.length?'Nadie con ese nombre o DNI.':'Sin personas todavía.')+'</div>')+'</div>';
-  if(hojaUrl) $('#linkHoja').href=hojaUrl;
-}
-$('#pBuscar').oninput=render;
-const laborTxt=()=>{ $('#laborTxt').textContent=$('#labor').value.trim()||'SALA DE CIERRE'; }; $('#labor').addEventListener('input',laborTxt); laborTxt();
-document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-dni]'); if(b){ b.disabled=true; procesar({dni:b.dataset.dni}).finally(()=>{b.disabled=false;}); return; }
-  const ed=e.target.closest('[data-edit]'); if(ed){ const p=personas.find(x=>x.dni===ed.dataset.edit); if(p){ $('#pDni').value=p.dni; $('#pNom').value=p.nombre; window.scrollTo({top:0,behavior:'smooth'}); } }
+/* ---------- pestañas ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  tab=b.dataset.tab; ls.set('tab',tab);
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['destajo','jornal','personal','ajustes'].forEach(t=>$('#t-'+t).hidden=t!==tab);
+  render(); if(tab==='destajo'||tab==='jornal') refrescar(tab,true); if(tab==='personal') refrescar(pTipo,true);
 });
 
-/* ---------- marcar ---------- */
+/* ---------- render ---------- */
+function render(){ renderDestajo(); renderJornal(); renderPersonal(); if(hojaUrl) $('#linkHoja').href=hojaUrl; }
+function renderDestajo(){
+  const s=S.destajo;
+  $('#secSala').textContent='En sala ('+s.abiertas.length+')';
+  $('#sala').innerHTML='<div class="list">'+(s.abiertas.length?[...s.abiertas].sort((a,b)=>a.hi-b.hi).map(a=>`
+    <div class="item in"><div class="who"><div class="name">${esc(a.nombre)}</div><div class="meta">Entró ${hm(a.hi)} · lleva ${dur(Date.now()-a.hi)} h</div></div>
+    <button class="btn r act sm" data-sal="${esc(a.dni)}">SALIDA</button></div>`).join(''):'<div class="empty">Nadie en sala.</div>')+'</div>';
+  $('#zonaTodos').innerHTML=s.abiertas.length>1?'<button class="btn r full" id="bTodos">Marcar SALIDA a todos ('+s.abiertas.length+')</button>':'';
+  if($('#bTodos')) $('#bTodos').onclick=()=>salidaTodos('destajo');
+  $('#ultimas').innerHTML='<div class="list">'+(s.ultimas.length?s.ultimas.map(e=>`<div class="item ${e.tipo==='Ingreso'?'in':''}"><div class="who"><div class="name">${esc(e.n)}</div><div class="meta">${e.tipo} ${hm(e.t)}${e.h!=null?' · '+horasTxt(e.h)+' h':''}</div></div></div>`).join(''):'<div class="empty">Aún no hay marcas hoy.</div>')+'</div>';
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-sal]'); if(b){ b.disabled=true; procesar({dni:b.dataset.sal}).finally(()=>{b.disabled=false;}); } });
+
+/* ---------- DESTAJEROS: marcar ---------- */
 const res=h=>{$('#res').innerHTML=h;};
 let ocupado=false;
 async function procesar(p){
   if(ocupado) return; ocupado=true;
-  res('<div class="res wait"><span class="spin"></span>Registrando…</div>');
+  const conocido=S.destajo.mapa.get(p.dni);
+  res('<div class="res wait"><span class="spin"></span>Registrando '+(conocido?'<b>'+esc(conocido.nombre)+'</b>':'DNI '+esc(p.dni))+'…</div>');
   try{
-    const r=await api('marcar',Object.assign({labor:$('#labor').value.trim()||'SALA DE CIERRE',obs:$('#obs').value.trim(),por:cfg.por,refri:cfg.refri,umbral:cfg.umbral},p));
+    const r=await api('marcar',Object.assign({tipo:'destajo',labor:$('#labor').value.trim()||'SALA DE CIERRE',obs:$('#obs').value.trim(),conEstado:true,bv:S.destajo.bv},p));
+    if(r.estado) aplicar('destajo',r.estado);
     if(r.tipo) $('#obs').value='';
-    if(r.noEncontrado){ nuevo(r); return r; }
-    if(r.aviso){
-      vibrar([80,60,80]);
+    if(r.noEncontrado){ nuevoDestajero(r); return r; }
+    if(r.aviso){ vibrar([80,60,80]);
       res(`<div class="res warn"><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><div style="margin-top:8px">⚠ ${esc(r.aviso)} ¿Qué hacemos?</div>
-        <div class="row"><button class="btn ghost" id="avNo">Nada, fue error</button><button class="btn ${r.accion==='salida'?'r':'g'}" id="avSi">Marcar ${r.accion.toUpperCase()}</button></div></div>`);
-      $('#avNo').onclick=()=>res(''); $('#avSi').onclick=()=>{ ocupado=false; procesar(Object.assign({},p,{forzar:true})); };
-      return r;
-    }
+        <div class="row"><button class="btn ghost" id="avNo">Nada, fue error</button>${r.accion?`<button class="btn ${r.accion==='salida'?'r':'g'}" id="avSi">Marcar ${r.accion.toUpperCase()}</button>`:''}</div></div>`);
+      $('#avNo').onclick=()=>res(''); if($('#avSi')) $('#avSi').onclick=()=>{ ocupado=false; procesar(Object.assign({},p,{forzar:true})); };
+      return r; }
     if(r.tipo==='ingreso'){ vibrar(150);
       res(`<div class="res ing"><div class="big">✔ INGRESO ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">DNI ${esc(r.dni)}</div><button class="btn wbtn" id="undo">Deshacer</button></div>`);
     } else { vibrar([150,80,150]);
@@ -245,59 +312,239 @@ async function procesar(p){
         <div class="row" style="margin-top:8px;gap:6px">${[0,30,45,60].map(m=>`<button class="btn wbtn" style="margin:0;padding:9px 4px;${m===r.refri?'background:#fff;color:var(--red)':''}" data-ref="${m}">${m?m+' min':'Sin'}</button>`).join('')}</div>
         <button class="btn wbtn" id="undo">Deshacer</button></div>`);
       $('#res').querySelectorAll('[data-ref]').forEach(b=>b.onclick=async()=>{
-        const m=Number(b.dataset.ref); $('#refTxt').textContent='Guardando…';
-        try{ const q=await api('refrigerio',{id:r.id,min:m}); r.refri=q.refri;
-          $('#netoH').textContent=horasTxt(q.horas)+' h'; $('#refTxt').textContent=q.refri?'Refrigerio descontado: '+q.refri+' min':'Sin refrigerio descontado';
-          $('#res').querySelectorAll('[data-ref]').forEach(x=>{ const on=Number(x.dataset.ref)===q.refri; x.style.background=on?'#fff':''; x.style.color=on?'var(--red)':''; });
-          refrescar(true);
-        }catch(e){ toast(e.message); $('#refTxt').textContent=''; }
-      });
+        $('#refTxt').textContent='Guardando…';
+        try{ const q=await api('refrigerio',{tipo:'destajo',id:r.id,min:Number(b.dataset.ref)}); r.refri=q.refri; $('#netoH').textContent=horasTxt(q.horas)+' h';
+          $('#refTxt').textContent=q.refri?'Refrigerio descontado: '+q.refri+' min':'Sin refrigerio descontado';
+          $('#res').querySelectorAll('[data-ref]').forEach(x=>{ const on=Number(x.dataset.ref)===q.refri; x.style.background=on?'#fff':''; x.style.color=on?'var(--red)':''; }); refrescar('destajo',true);
+        }catch(e){ toast(e.message); } });
     }
-    $('#undo').onclick=async()=>{ try{ await api('deshacer',{id:r.id,tipo:r.tipo}); res('<div class="res warn">'+(r.tipo==='ingreso'?'Ingreso':'Salida')+' de '+esc(r.nombre)+' anulado.</div>'); ultimoCod={c:'',t:0}; refrescar(true);}catch(e){toast(e.message);} };
-    refrescar(true);
+    $('#undo').onclick=async()=>{ try{ const q=await api('deshacer',{tipo:'destajo',id:r.id,tipoMarca:r.tipo,bv:S.destajo.bv}); aplicar('destajo',q.estado); res('<div class="res warn">'+(r.tipo==='ingreso'?'Ingreso':'Salida')+' de '+esc(r.nombre)+' anulado.</div>'); ultimoCod={c:'',t:0}; }catch(e){toast(e.message);} };
     return r;
   }catch(e){ res('<div class="res warn">'+esc(e.message)+'</div>'); return {error:e.message}; }
   finally{ ocupado=false; }
 }
-function nuevo(r){
+function nuevoDestajero(r){
   vibrar([60,60,60,60]);
-  const conTar=!!r.tarjeta;
-  res(`<div class="res warn"><div class="nm">${conTar?'Tarjeta nueva':'DNI no registrado'}</div>
-    <div class="dt" style="color:var(--muted)">${conTar?'Escribe el DNI de la persona para asignarle esta tarjeta':'Registra a la persona para marcar su ingreso'}</div>
-    <label>DNI o C.E.</label><input id="nDni" inputmode="numeric" maxlength="9" value="${esc(r.dni||'')}">
-    <label>Nombre y apellido</label><input id="nNom" autocomplete="off">
+  res(`<div class="res warn"><div class="nm">DNI no registrado</div><div class="dt" style="color:var(--muted)">Registra a la persona para marcar su ingreso</div>
+    <label>DNI</label><input id="nDni" inputmode="numeric" maxlength="9" value="${esc(r.dni||'')}">
+    <label>Apellidos y nombres</label><input id="nNom" autocomplete="off">
     <div class="row" style="margin-top:12px"><button class="btn ghost" id="nNo">Cancelar</button><button class="btn g" id="nSi">Guardar e INGRESO</button></div></div>`);
-  const llenar=()=>{ const p=personas.find(x=>x.dni===$('#nDni').value.replace(/\D/g,'')); if(p&&!$('#nNom').value) $('#nNom').value=p.nombre; };
-  $('#nDni').oninput=llenar; llenar(); (conTar?$('#nDni'):$('#nNom')).focus();
-  $('#nNo').onclick=()=>res('');
-  $('#nSi').onclick=async()=>{
-    const dni=$('#nDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
-    $('#nSi').disabled=true;
-    try{ await api('guardarPersona',{dni,nombre:$('#nNom').value,tarjeta:r.tarjeta||''}); await procesar({dni}); }
-    catch(e){ toast(e.message); $('#nSi').disabled=false; }
-  };
+  $('#nNom').focus(); $('#nNo').onclick=()=>res('');
+  $('#nSi').onclick=async()=>{ const dni=$('#nDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
+    $('#nSi').disabled=true; try{ const q=await api('guardarPersona',{tipo:'destajo',dni,nombre:$('#nNom').value}); aplicar('destajo',{base:q.base}); await procesar({dni}); }catch(e){ toast(e.message); $('#nSi').disabled=false; } };
 }
-async function salidaTodos(){
-  if(!window.confirm('¿Marcar SALIDA a las '+abiertas.length+' personas en sala?')) return;
-  try{ const r=await api('salidaTodos',{por:cfg.por,refri:cfg.refri,umbral:cfg.umbral}); toast('Salida '+hm(r.hora)+' marcada a '+r.n+' personas.'); refrescar(true); }catch(e){ toast(e.message); }
+async function salidaTodos(t){
+  const n=S[t].abiertas.length;
+  const hora=t==='jornal'?$('#jHora').value:'';
+  if(!await confirmar('¿Salida a todos?', 'Se marcará la salida'+(hora?' a las '+hora:' ahora')+' a '+n+' personas en sala.', 'Sí, marcar salida','r')) return;
+  try{ const r=await api('salidaTodos',{tipo:t,hora,fecha:t==='jornal'?jFecha():undefined,bv:S[t].bv}); aplicar(t,r.estado); toast('Salida '+hm(r.hora)+' marcada a '+r.n+' personas.'); }catch(e){ toast(e.message); }
 }
-
-/* DNI escrito */
 const dniGo=()=>{ const d=$('#dniIn').value.replace(/\D/g,''); if(d.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; } $('#dniIn').value=''; $('#dniIn').blur(); procesar({dni:d}); };
 $('#dniGo').onclick=dniGo; $('#dniIn').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); dniGo(); } };
 
-/* ---------- Escáner de tarjeta (código de barras + número impreso) ---------- */
-let stream=null, scanOn=false, loopT=null, detector=null, zx=null, tessW=null, tessP=null, ultimoCod={c:'',t:0}, pausaHasta=0, ocrOcupado=false, ultOcr=0, luz=false;
+/* ---------- JORNALES ---------- */
+const jFecha=()=>$('#jFecha').value||ymd(new Date());
+$('#jFecha').value=ymd(new Date());
+const jMover=n=>{ const d=new Date(jFecha()+'T12:00'); d.setDate(d.getDate()+n); $('#jFecha').value=ymd(d); jCambioFecha(); };
+function jCambioFecha(){ const hoy=jFecha()===ymd(new Date()); $('#jHoraTxt').textContent=hoy?'Vacío = hora actual. Pon una hora si llegaron antes que el supervisor.':'Día pasado: indica la hora para cada marca.'; S.jornal.delDia=[]; renderJornal(); refrescar('jornal'); }
+$('#jPrev').onclick=()=>jMover(-1); $('#jNext').onclick=()=>jMover(1); $('#jFecha').onchange=jCambioFecha;
+$('#jAhora').onclick=()=>{ $('#jHora').value=''; toast('Se usará la hora actual'); };
+$('#jBuscar').oninput=renderJornal;
+function estadoJ(){ // por DNI: el último registro del día elegido
+  const m=new Map(); [...S.jornal.delDia].sort((a,b)=>a.hi-b.hi).forEach(x=>m.set(x.dni,x)); return m; }
+function renderJornal(){
+  const s=S.jornal, m=estadoJ(), q=$('#jBuscar').value.trim().toLowerCase();
+  let pres=0,sal=0,fal=0;
+  const filas=s.lista.map(p=>{ const x=m.get(p.dni); const st=!x?'falta':(x.hf?'salio':'dentro'); if(st==='falta')fal++; else if(st==='dentro')pres++; else sal++; return {p,x,st}; });
+  $('#jPres').textContent=pres; $('#jSal').textContent=sal; $('#jFal').textContent=fal;
+  const orden={dentro:0,falta:1,salio:2};
+  const vis=filas.filter(f=>!q||f.p.nombre.toLowerCase().includes(q)||f.p.dni.includes(q)).sort((a,b)=>orden[a.st]-orden[b.st]||a.p.nombre.localeCompare(b.p.nombre,'es'));
+  $('#jLista').innerHTML='<div class="list">'+(vis.length?vis.map(({p,x,st})=>`
+    <div class="item ${st==='dentro'?'in':st==='salio'?'out':''}"><div class="who"><div class="name">${esc(p.nombre)}</div>
+      <div class="meta">${st==='falta'?(esc(p.cargo)||'Sin marcar'):st==='dentro'?'Entró '+hm(x.hi)+' · lleva '+dur(Date.now()-x.hi)+' h':'Entró '+hm(x.hi)+' · Salió '+hm(x.hf)+' · <b>'+horasTxt(x.horas)+' h</b>'}</div></div>
+      ${st==='falta'?`<button class="btn g act sm" data-jin="${esc(p.dni)}">INGRESO</button>`:st==='dentro'?`<button class="btn r act sm" data-jout="${esc(p.dni)}">SALIDA</button>`:''}
+      ${x?`<button class="edit" data-jed="${esc(x.id)}" aria-label="Editar horas">✏️</button>`:''}</div>`).join(''):'<div class="empty">'+(s.lista.length?'Nadie con ese nombre.':'Aún no hay jornales cargados en DATA PERSONAL.')+'</div>')+'</div>';
+}
+$('#jLista').addEventListener('click',async e=>{
+  const bi=e.target.closest('[data-jin]'), bo=e.target.closest('[data-jout]'), be=e.target.closest('[data-jed]');
+  if(bi||bo){ const b=bi||bo, hoy=jFecha()===ymd(new Date()), hora=$('#jHora').value;
+    if(!hoy&&!hora){ toast('Para un día pasado indica la hora arriba.'); $('#jHora').focus(); return; }
+    b.disabled=true; b.innerHTML='<span class="spin"></span>';
+    try{ const r=await api('marcar',{tipo:'jornal',dni:b.dataset.jin||b.dataset.jout,hora,fecha:jFecha(),solo:bi?'ingreso':undefined,forzar:true,conEstado:true,bv:S.jornal.bv});
+      if(r.estado) aplicar('jornal',r.estado);
+      if(r.aviso) toast(r.nombre+': '+r.aviso); else if(r.tipo){ vibrar(120); toast((r.tipo==='ingreso'?'Ingreso ':'Salida ')+hm(r.hora)+' · '+r.nombre+(r.tipo==='salida'?' · '+horasTxt(r.horas)+' h':'')); }
+    }catch(err){ toast(err.message); renderJornal(); } }
+  if(be) editarJ(be.dataset.jed);
+});
+function editarJ(id){
+  const x=S.jornal.delDia.find(r=>r.id===id); if(!x) return;
+  const refs=[0,30,45,60]; const otro=!refs.includes(x.refri);
+  modal(`<h2>Corregir horas</h2><div class="hint">${esc(x.nombre)} · ${dmy(x.fecha)}</div>
+    <div class="row"><div><label>Hora de ingreso</label><input type="time" id="eHi" value="${hm(x.hi)}"></div><div><label>Hora de salida</label><input type="time" id="eHf" value="${x.hf?hm(x.hf):''}"></div></div>
+    <label>Refrigerio a descontar</label><div class="row">${refs.map(m=>`<button class="btn ghost sm" data-er="${m}">${m?m+' min':'Sin'}</button>`).join('')}<input id="eRef" inputmode="numeric" placeholder="min" value="${x.hf?x.refri:''}" style="flex:0 0 74px"></div>
+    <label>Observación</label><input id="eObs" value="${esc(x.obs.replace(/\s*·?\s*DESCONTANDO REFRIGERIO \d+ MIN/i,''))}">
+    <div class="hint" style="margin-top:8px">Deja la salida vacía si todavía está en sala.</div>
+    <div class="actions"><button class="btn r" id="eDel">Borrar</button><button class="btn ghost" id="eNo">Cancelar</button><button class="btn g" id="eOk">Guardar</button></div>`);
+  const marcarRef=()=>document.querySelectorAll('[data-er]').forEach(b=>{ const on=String(b.dataset.er)===$('#eRef').value; b.style.background=on?'var(--green)':''; b.style.color=on?'#fff':''; });
+  document.querySelectorAll('[data-er]').forEach(b=>b.onclick=()=>{ $('#eRef').value=b.dataset.er; marcarRef(); }); $('#eRef').oninput=marcarRef; marcarRef();
+  $('#eNo').onclick=cerrarModal;
+  $('#eOk').onclick=async()=>{ const hi=$('#eHi').value, hf=$('#eHf').value; if(!hi){ toast('Falta la hora de ingreso.'); return; }
+    $('#eOk').disabled=true; try{ const r=await api('editar',{tipo:'jornal',id,hi,hf,refri:$('#eRef').value===''?undefined:Number($('#eRef').value),obs:$('#eObs').value.trim(),fecha:jFecha(),bv:S.jornal.bv}); aplicar('jornal',r.estado); cerrarModal(); toast('Horas corregidas ✔'); }
+    catch(e){ toast(e.message); $('#eOk').disabled=false; } };
+  $('#eDel').onclick=async()=>{ cerrarModal(); if(!await confirmar('¿Borrar este registro?',x.nombre+' · '+dmy(x.fecha),'Borrar','r')) return;
+    try{ const r=await api('borrar',{tipo:'jornal',id,fecha:jFecha(),bv:S.jornal.bv}); aplicar('jornal',r.estado); toast('Registro borrado'); }catch(e){ toast(e.message); } };
+}
+$('#jTodosIn').onclick=async()=>{
+  const m=estadoJ(), faltan=S.jornal.lista.filter(p=>!m.get(p.dni)); if(!faltan.length){ toast('No falta nadie.'); return; }
+  const hoy=jFecha()===ymd(new Date()), hora=$('#jHora').value; if(!hoy&&!hora){ toast('Para un día pasado indica la hora arriba.'); return; }
+  if(!await confirmar('¿Ingreso a '+faltan.length+' personas?','Hora: '+(hora||'ahora')+' · '+dmy(jFecha()),'Marcar ingreso')) return;
+  try{ const r=await api('ingresoVarios',{tipo:'jornal',dnis:faltan.map(p=>p.dni),hora,fecha:jFecha(),bv:S.jornal.bv}); aplicar('jornal',r.estado); toast('Ingreso marcado a '+r.n+' personas'+(r.errores.length?' · '+r.errores.length+' con aviso':'')); }catch(e){ toast(e.message); }
+};
+$('#jTodosOut').onclick=()=>{ if(!S.jornal.abiertas.length){ toast('Nadie en sala.'); return; } salidaTodos('jornal'); };
+
+/* ---------- PERSONAL ---------- */
+let pTipo='destajo';
+document.querySelectorAll('#pSeg button').forEach(b=>b.onclick=()=>{ pTipo=b.dataset.t; document.querySelectorAll('#pSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#pCargoBox').hidden=pTipo!=='jornal'; $('#pTitulo').textContent='Agregar o actualizar '+(pTipo==='jornal'?'jornal':'destajero'); renderPersonal(); refrescar(pTipo,true); });
+$('#pBuscar').oninput=renderPersonal;
+function renderPersonal(){
+  const s=S[pTipo], q=$('#pBuscar').value.trim().toLowerCase();
+  const pl=s.lista.filter(p=>!q||p.nombre.toLowerCase().includes(q)||p.dni.includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  $('#pCount').textContent=(pTipo==='jornal'?'Jornales':'Destajeros')+' ('+s.lista.length+')';
+  $('#pLista').innerHTML='<div class="list">'+(pl.length?pl.slice(0,40).map(p=>`<div class="item"><div class="who"><div class="name">${esc(p.nombre)}</div><div class="meta">DNI ${esc(p.dni)}${p.cargo?' · '+esc(p.cargo):''}</div></div><button class="btn ghost sm" data-edit="${esc(p.dni)}">Editar</button></div>`).join('')+(pl.length>40?'<div class="empty">'+(pl.length-40)+' más… escribe para buscar</div>':''):'<div class="empty">'+(s.lista.length?'Nadie con ese nombre o DNI.':'Sin personas todavía.')+'</div>')+'</div>';
+}
+$('#pLista').addEventListener('click',e=>{ const b=e.target.closest('[data-edit]'); if(!b) return; const p=S[pTipo].mapa.get(b.dataset.edit); if(!p) return; $('#pDni').value=p.dni; $('#pNom').value=p.nombre; $('#pCargo').value=p.cargo||''; window.scrollTo({top:0,behavior:'smooth'}); });
+$('#pGuardar').onclick=async()=>{
+  const dni=$('#pDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
+  $('#pGuardar').disabled=true;
+  try{ const r=await api('guardarPersona',{tipo:pTipo,dni,nombre:$('#pNom').value,cargo:$('#pCargo').value}); aplicar(pTipo,{base:r.base}); toast((r.nueva?'Agregado: ':'Actualizado: ')+r.persona.nombre); $('#pDni').value='';$('#pNom').value='';$('#pCargo').value=''; }
+  catch(e){ toast(e.message); } $('#pGuardar').disabled=false;
+};
+
+/* ---------- AJUSTES ---------- */
+$('#cGuardar').onclick=()=>{
+  cfg.por=$('#cPor').value.trim(); const rf=parseInt($('#cRefri').value,10), um=parseFloat($('#cUmbral').value);
+  cfg.refri=String(rf>=0?rf:45); cfg.umbral=String(um>=0?um:6); ['por','refri','umbral'].forEach(k=>ls.set(k,cfg[k])); $('#cRefri').value=cfg.refri; $('#cUmbral').value=cfg.umbral; toast('Guardado ✔');
+};
+$('#cCompartir').onclick=async()=>{
+  if(!listo()){ toast('Esta app aún no está conectada.'); return; }
+  const link=location.origin+location.pathname+'?u='+encodeURIComponent(cfg.url)+'&k='+encodeURIComponent(cfg.clave)+'&r='+encodeURIComponent(cfg.refri)+'&h='+encodeURIComponent(cfg.umbral);
+  const texto='ASISTENCIA CIERRE CAC. Ábrela con Chrome y toca "Instalar": ';
+  try{ if(navigator.share){ await navigator.share({title:'ASISTENCIA CIERRE CAC',text:texto,url:link}); return; } }catch(e){ if(e.name==='AbortError') return; }
+  try{ await navigator.clipboard.writeText(texto+link); toast('Link copiado. Pégalo en WhatsApp.'); }catch(e){ window.prompt('Copia este link:',link); }
+};
+let toques=0; $('#ver').onclick=()=>{ if(++toques>=5) $('#conexion').hidden=false; };
+$('#cConectar').onclick=async()=>{ cfg.url=$('#cUrl').value.trim(); cfg.clave=$('#cClave').value.trim(); ls.set('url',cfg.url); ls.set('clave',cfg.clave); $('#pillConf').classList.toggle('show',!listo()); try{ await api('estado',{tipo:'destajo'}); toast('Conectado ✔'); refrescar('destajo'); }catch(e){ toast(e.message); } };
+let promptInstalar=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); promptInstalar=e; $('#cardInstalar').hidden=false; });
+$('#bInstalar').onclick=async()=>{ if(!promptInstalar) return; promptInstalar.prompt(); await promptInstalar.userChoice; promptInstalar=null; $('#cardInstalar').hidden=true; };
+
+/* ---------- REPORTES EXCEL ---------- */
+let rTipo='destajo';
+document.querySelectorAll('#rSeg button').forEach(b=>b.onclick=()=>{ rTipo=b.dataset.t; document.querySelectorAll('#rSeg button').forEach(x=>x.classList.toggle('on',x===b)); });
+function rango(k){ const h=new Date(); let a=new Date(h), z=new Date(h);
+  if(k==='ayer'){ a.setDate(h.getDate()-1); z=new Date(a); }
+  if(k==='semana'){ const dw=(h.getDay()+6)%7; a.setDate(h.getDate()-dw); }
+  if(k==='mes'){ a=new Date(h.getFullYear(),h.getMonth(),1); }
+  if(k==='mesant'){ a=new Date(h.getFullYear(),h.getMonth()-1,1); z=new Date(h.getFullYear(),h.getMonth(),0); }
+  $('#rDesde').value=ymd(a); $('#rHasta').value=ymd(z); }
+document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>rango(b.dataset.r)); rango('mes');
+let excelP=null;
+const cargarExcel=()=>excelP||(excelP=new Promise((ok,no)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'; s.onload=()=>ok(window.ExcelJS); s.onerror=()=>{excelP=null;no(new Error('Sin señal para preparar el Excel.'));}; document.head.appendChild(s); }));
+$('#rGo').onclick=async()=>{
+  const desde=$('#rDesde').value, hasta=$('#rHasta').value; if(!desde||!hasta||desde>hasta){ toast('Revisa las fechas.'); return; }
+  $('#rGo').disabled=true; $('#rInfo').innerHTML='<span class="spin"></span>Preparando reporte…';
+  try{
+    const [r,Ex]=await Promise.all([api('reporte',{tipo:rTipo,desde,hasta}),cargarExcel()]);
+    if(!r.filas.length){ $('#rInfo').textContent='No hay registros en esas fechas.'; return; }
+    const blob=await armarExcel(Ex,rTipo,desde,hasta,r.filas);
+    const nombre='Reporte_'+(rTipo==='jornal'?'Jornales':'Destajeros')+'_'+desde+(desde!==hasta?'_al_'+hasta:'')+'.xlsx';
+    const file=new File([blob],nombre,{type:blob.type});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nombre; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
+    $('#rInfo').innerHTML='✔ Descargado: '+esc(nombre)+' ('+r.filas.length+' registros)'+(navigator.canShare&&navigator.canShare({files:[file]})?' · <a href="#" id="rShare">Enviar por WhatsApp</a>':'');
+    if($('#rShare')) $('#rShare').onclick=async ev=>{ ev.preventDefault(); try{ await navigator.share({files:[file],title:nombre}); }catch(e){} };
+  }catch(e){ $('#rInfo').textContent=e.message; }
+  finally{ $('#rGo').disabled=false; }
+};
+async function armarExcel(Ex,tipo,desde,hasta,filas){
+  const VERDE='FF17322A', VERDE2='FF1F7A4D', CLARO='FFE3F2EA', GRIS='FFF4F5F2', BL='FFFFFFFF';
+  const titulo=tipo==='jornal'?'JORNALES':'DESTAJEROS', col7=tipo==='jornal'?'CARGO / ÁREA':'DESCRIPCIÓN DE APOYO';
+  const wb=new Ex.Workbook(); wb.creator='ASISTENCIA CIERRE CAC';
+  const fecha=s=>{ const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); };
+  const frac=t=>{ const d=new Date(t); return (d.getHours()*60+d.getMinutes())/1440; };
+  const borde={top:{style:'thin',color:{argb:'FFD5DAD6'}},left:{style:'thin',color:{argb:'FFD5DAD6'}},bottom:{style:'thin',color:{argb:'FFD5DAD6'}},right:{style:'thin',color:{argb:'FFD5DAD6'}}};
+  const cab=(ws,rowN,vals)=>{ const r=ws.getRow(rowN); vals.forEach((v,i)=>{ const c=r.getCell(i+1); c.value=v; c.font={bold:true,color:{argb:BL}}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:VERDE2}}; c.alignment={vertical:'middle',horizontal:'center',wrapText:true}; c.border=borde; }); r.height=30; };
+  const encabezado=(ws,cols,sub)=>{ ws.mergeCells(1,1,1,cols); const t=ws.getCell(1,1); t.value='ASISTENCIA CIERRE CAC  ·  REPORTE DE '+titulo; t.font={bold:true,size:16,color:{argb:BL}}; t.fill={type:'pattern',pattern:'solid',fgColor:{argb:VERDE}}; t.alignment={vertical:'middle',indent:1}; ws.getRow(1).height=34;
+    ws.mergeCells(2,1,2,cols); const s=ws.getCell(2,1); s.value=sub; s.font={italic:true,color:{argb:'FF4A524E'}}; s.fill={type:'pattern',pattern:'solid',fgColor:{argb:CLARO}}; s.alignment={indent:1}; ws.getRow(2).height=20; };
+  const sub='Período: '+dmy(desde)+' al '+dmy(hasta)+'   ·   Generado: '+dmy(ymd(new Date()))+' '+hm(Date.now())+(cfg.por?' por '+cfg.por:'');
+  // agregados
+  const per=new Map(), dia=new Map(); let tot=0, sinSal=0;
+  filas.forEach(x=>{ const h=x.horas||0; tot+=h; if(x.hf==null) sinSal++;
+    const p=per.get(x.dni)||{dni:x.dni,nombre:x.nombre,apoyo:x.apoyo,dias:new Set(),h:0,n:0,sin:0}; p.dias.add(x.fecha); p.h+=h; p.n++; if(x.hf==null)p.sin++; per.set(x.dni,p);
+    const d=dia.get(x.fecha)||{fecha:x.fecha,pers:new Set(),h:0}; d.pers.add(x.dni); d.h+=h; dia.set(x.fecha,d); });
+  const P=[...per.values()].sort((a,b)=>b.h-a.h), D=[...dia.values()].sort((a,b)=>a.fecha<b.fecha?-1:1);
+  // Hoja 1: Resumen
+  const ws=wb.addWorksheet('Resumen',{views:[{showGridLines:false}],properties:{tabColor:{argb:VERDE2}}});
+  ws.columns=[{width:6},{width:13},{width:40},{width:10},{width:14},{width:16},{width:14}];
+  encabezado(ws,7,sub);
+  const kpi=[['Personas',P.length,'0'],['Registros',filas.length,'0'],['Horas totales',tot/24,'[h]:mm'],['Promedio por persona',P.length?tot/P.length/24:0,'[h]:mm']];
+  const posK=[[1,2],[3,3],[4,5],[6,7]];
+  kpi.forEach((k,i)=>{ const [a,b]=posK[i]; ws.mergeCells(4,a,4,b); ws.mergeCells(5,a,5,b);
+    const l=ws.getCell(4,a); l.value=k[0]; l.font={size:10,color:{argb:'FF6B736F'},bold:true}; l.alignment={horizontal:'center'}; l.fill={type:'pattern',pattern:'solid',fgColor:{argb:GRIS}};
+    const v=ws.getCell(5,a); v.value=k[1]; v.numFmt=k[2]; v.font={size:20,bold:true,color:{argb:VERDE2}}; v.alignment={horizontal:'center',vertical:'middle'}; v.fill={type:'pattern',pattern:'solid',fgColor:{argb:GRIS}}; });
+  ws.getRow(5).height=34;
+  if(sinSal){ ws.mergeCells(6,1,6,7); const w=ws.getCell(6,1); w.value='⚠ '+sinSal+' registro(s) sin hora de salida: no suman horas. Revísalos en la hoja Detalle (en amarillo).'; w.font={color:{argb:'FF9A6A00'},bold:true}; w.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF4D6'}}; }
+  ws.getCell(8,1).value='HORAS POR PERSONA'; ws.getCell(8,1).font={bold:true,size:12,color:{argb:VERDE}};
+  cab(ws,9,['N°','DNI','APELLIDOS Y NOMBRES','DÍAS','HORAS','PROMEDIO / DÍA','SIN SALIDA']);
+  P.forEach((p,i)=>{ const r=ws.getRow(10+i); r.values=[i+1,p.dni,p.nombre,p.dias.size,p.h/24,p.dias.size?p.h/p.dias.size/24:0,p.sin||''];
+    r.getCell(5).numFmt='[h]:mm'; r.getCell(6).numFmt='[h]:mm'; r.eachCell({includeEmpty:true},(c,n)=>{ if(n<=7){ c.border=borde; if(i%2) c.fill={type:'pattern',pattern:'solid',fgColor:{argb:GRIS}}; if(n!==3) c.alignment={horizontal:'center'}; } }); });
+  const ft=10+P.length; const rt=ws.getRow(ft); rt.values=['','','TOTAL',null,tot/24,'',sinSal||''];
+  rt.getCell(5).numFmt='[h]:mm'; rt.eachCell({includeEmpty:true},(c,n)=>{ if(n<=7){ c.font={bold:true,color:{argb:BL}}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:VERDE}}; c.border=borde; c.alignment={horizontal:n===3?'right':'center'}; } });
+  if(P.length) ws.addConditionalFormatting({ref:'E10:E'+(9+P.length),rules:[{type:'dataBar',minLength:0,maxLength:100,cfvo:[{type:'min'},{type:'max'}],color:{argb:'FF7FD1A6'}}]});
+  ws.pageSetup={orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}};
+  ws.views=[{state:'frozen',ySplit:9,showGridLines:false}];
+  // Hoja 2: Por día
+  const wd=wb.addWorksheet('Por día',{properties:{tabColor:{argb:'FF7FD1A6'}}});
+  wd.columns=[{width:13},{width:13},{width:12},{width:12},{width:16}];
+  encabezado(wd,5,sub);
+  cab(wd,4,['FECHA','DÍA','PERSONAS','HORAS','PROMEDIO / PERSONA']);
+  D.forEach((d,i)=>{ const f=fecha(d.fecha), r=wd.getRow(5+i); r.values=[f,DIAS[new Date(d.fecha+'T12:00').getDay()].replace(/^./,c=>c.toUpperCase()),d.pers.size,d.h/24,d.pers.size?d.h/d.pers.size/24:0];
+    r.getCell(1).numFmt='dd/mm/yyyy'; r.getCell(4).numFmt='[h]:mm'; r.getCell(5).numFmt='[h]:mm';
+    r.eachCell({includeEmpty:true},(c,n)=>{ if(n<=5){ c.border=borde; c.alignment={horizontal:'center'}; if(i%2) c.fill={type:'pattern',pattern:'solid',fgColor:{argb:GRIS}}; } }); });
+  const fd=5+D.length; wd.getRow(fd).values=['TOTAL','',P.length,tot/24,''];
+  wd.getRow(fd).getCell(4).numFmt='[h]:mm'; wd.getRow(fd).eachCell({includeEmpty:true},(c,n)=>{ if(n<=5){ c.font={bold:true,color:{argb:BL}}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:VERDE}}; c.border=borde; c.alignment={horizontal:'center'}; } });
+  wd.views=[{state:'frozen',ySplit:4}];
+  // Hoja 3: Detalle
+  const wt=wb.addWorksheet('Detalle');
+  wt.columns=[{width:12},{width:12},{width:38},{width:9},{width:9},{width:13},{width:11},{width:24},{width:34},{width:18},{width:18}];
+  encabezado(wt,11,sub);
+  cab(wt,4,['FECHA','DNI','NOMBRES','HI','HF','REFRIGERIO (MIN)','HORAS',col7,'OBSERVACIÓN','REGISTRÓ INGRESO','REGISTRÓ SALIDA']);
+  [...filas].sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:(a.hi-b.hi)).forEach((x,i)=>{
+    const r=wt.getRow(5+i); r.values=[fecha(x.fecha),x.dni,x.nombre,frac(x.hi),x.hf!=null?frac(x.hf):'SIN SALIDA',x.hf!=null?x.refri:'',x.horas!=null?x.horas/24:'',x.apoyo,x.obs,x.por||'',x.porS||''];
+    r.getCell(1).numFmt='dd/mm/yyyy'; r.getCell(4).numFmt='hh:mm'; r.getCell(5).numFmt='hh:mm'; r.getCell(7).numFmt='[h]:mm';
+    r.eachCell({includeEmpty:true},(c,n)=>{ if(n<=11){ c.border=borde; if(n!==3&&n!==8&&n!==9) c.alignment={horizontal:'center'};
+      if(x.hf==null) c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF4D6'}}; else if(i%2) c.fill={type:'pattern',pattern:'solid',fgColor:{argb:GRIS}}; } }); });
+  wt.autoFilter={from:{row:4,column:1},to:{row:4+filas.length,column:11}};
+  wt.views=[{state:'frozen',ySplit:4}];
+  const buf=await wb.xlsx.writeBuffer();
+  return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+/* ---------- ESCÁNER DE TARJETA: código de barras + número impreso ---------- */
+let stream=null, scanOn=false, loopT=null, detector=null, zx=null, tessP=null, workers=[], ultimoCod={c:'',t:0}, pausaHasta=0, ocrLibres=0, vuelta=0, luz=false, candidato={c:'',n:0,t:0};
 const cnv=document.createElement('canvas'), ctx=cnv.getContext('2d',{willReadFrequently:true});
-const TXT_GUIA='Pon el código de barras y el número dentro del recuadro';
+const TXT_GUIA='Encuadra toda la tarjeta';
 const setTxt=t=>{ $('#scanTxt').textContent=t; };
 function cargarScript(src){ return new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>no(new Error('sin señal')); document.head.appendChild(s); }); }
-// De un texto leído saca el DNI: primero uno que exista en BASE DATOS; si no, un número de 8 o 9 dígitos
-function elegir(texto, soloConocidos){
-  const nums=String(texto||'').match(/\d{8,14}/g)||[];
-  for(const n of nums){ const k=personas.find(p=>p.dni===n||(n.length>9&&n.includes(p.dni))); if(k) return k.dni; }
-  if(soloConocidos) return null;
-  return nums.find(x=>x.length===8||x.length===9)||null;
+// Busca el DNI en un texto: exacto en la base; o con 1 número mal leído (se confirma con 2 lecturas)
+function buscarDni(texto, soloBase){
+  const mapa=S.destajo.mapa, nums=String(texto||'').match(/\d{7,14}/g)||[];
+  for(const n of nums){ if(mapa.has(n)) return {dni:n,ex:true}; if(n.length>9) for(const d of mapa.keys()) if(n.includes(d)) return {dni:d,ex:true}; }
+  for(const n of nums){ if(n.length!==8&&n.length!==9) continue; let hit=null, k=0;
+    for(const d of mapa.keys()){ if(d.length!==n.length) continue; let dif=0; for(let i=0;i<n.length&&dif<2;i++) if(n[i]!==d[i]) dif++; if(dif===1){ hit=d; if(++k>1) break; } }
+    if(k===1) return {dni:hit,ex:false}; }
+  if(soloBase) return null;
+  const n=nums.find(x=>x.length===8||x.length===9); return n?{dni:n,ex:true}:null;
 }
 async function cargarZX(){
   if(zx) return; await cargarScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js');
@@ -305,24 +552,53 @@ async function cargarZX(){
   h.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[F.CODE_128,F.CODE_39,F.CODE_93,F.ITF,F.CODABAR,F.EAN_13,F.EAN_8]);
   const r=new ZXing.MultiFormatReader(); r.setHints(h); zx=r;
 }
-function zxLeer(){ try{ const b=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(cnv))); return elegir(zx.decodeWithState(b).getText(),false); }catch(e){ return null; } }
+function zxLeer(c){ try{ const b=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(c))); return zx.decodeWithState(b).getText(); }catch(e){ return null; } }
 function cargarTess(){
   if(tessP) return tessP;
   tessP=(async()=>{ await cargarScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
-    const w=await Tesseract.createWorker('eng'); await w.setParameters({tessedit_char_whitelist:'0123456789',tessedit_pageseg_mode:'11'}); tessW=w; })();
+    const n=(navigator.hardwareConcurrency||4)>=6?2:1;
+    for(let i=0;i<n;i++){ const w=await Tesseract.createWorker('eng'); await w.setParameters({tessedit_char_whitelist:'0123456789'}); workers.push({w,libre:true}); }
+    ocrLibres=workers.length; })();
   tessP.catch(()=>{ tessP=null; }); return tessP;
 }
-// Recorta del video solo lo que está dentro del recuadro verde (un poco más)
-function recorte(v){
+// Zona del video que está dentro del recuadro (la tarjeta)
+function zonaTarjeta(v){
   const vw=v.videoWidth, vh=v.videoHeight, cw=v.clientWidth, ch=v.clientHeight, k=Math.max(cw/vw,ch/vh);
   const ox=(vw*k-cw)/2, oy=(vh*k-ch)/2, m=$('.marco').getBoundingClientRect(), vb=v.getBoundingClientRect();
   let x=(m.left-vb.left+ox)/k, y=(m.top-vb.top+oy)/k, w=m.width/k, h=m.height/k;
-  x-=w*.06; y-=h*.12; w*=1.12; h*=1.24;
+  x-=w*.05; y-=h*.06; w*=1.10; h*=1.12;
   x=Math.max(0,x); y=Math.max(0,y); w=Math.min(vw-x,w); h=Math.min(vh-y,h);
   return {x,y,w,h};
 }
+// Franja del número: gris, quita sombras (divide por el fondo difuminado), blanco y negro, tamaño ideal para leer
+function franja(src,y0f,y1f,umbral){
+  const sy=Math.round(src.height*y0f), sh=Math.round(src.height*(y1f-y0f)), sw=src.width;
+  const k=Math.max(.6,Math.min(3,130/sh)), W=Math.round(sw*k), H=Math.round(sh*k);
+  const a=document.createElement('canvas'); a.width=W; a.height=H; const ga=a.getContext('2d',{willReadFrequently:true});
+  ga.filter='grayscale(1)'; ga.drawImage(src,0,sy,sw,sh,0,0,W,H);
+  const b=document.createElement('canvas'); b.width=W; b.height=H; const gb=b.getContext('2d',{willReadFrequently:true});
+  gb.filter='blur('+Math.max(8,Math.round(H/5))+'px)'; gb.drawImage(a,0,0);
+  const A=ga.getImageData(0,0,W,H), B=gb.getImageData(0,0,W,H).data, d=A.data;
+  for(let i=0;i<d.length;i+=4){ const v=d[i]/Math.max(1,B[i])*255; const t=v>umbral?255:0; d[i]=d[i+1]=d[i+2]=t; d[i+3]=255; }
+  ga.filter='none'; ga.putImageData(A,0,0);
+  // borde blanco: el lector trabaja mejor con margen
+  const c=document.createElement('canvas'); c.width=W+40; c.height=H+40; const gc=c.getContext('2d'); gc.fillStyle='#fff'; gc.fillRect(0,0,c.width,c.height); gc.drawImage(a,20,20); return c;
+}
+const PASADAS=[[.55,.95,200,'11'],[.62,.95,185,'11'],[.65,.92,200,'11'],[.55,.95,215,'11'],[.62,.95,200,'11'],[.65,.92,215,'11'],[.70,.95,200,'11']];
+async function ocr(src,pasada){
+  const libre=workers.find(x=>x.libre); if(!libre) return null; libre.libre=false;
+  try{ const [y0,y1,um,psm]=pasada; await libre.w.setParameters({tessedit_pageseg_mode:psm});
+    const {data}=await libre.w.recognize(franja(src,y0,y1,um)); const t=data.text||'';
+    return buscarDni(t,true)||buscarDni(t.replace(/\s+/g,''),true);
+  }catch(e){ return null; } finally{ libre.libre=true; }
+}
+async function barras(c){
+  if(detector){ try{ const bs=await detector.detect(c); for(const b of bs){ const r=buscarDni(b.rawValue,false); if(r) return r; } }catch(e){} }
+  if(zx){ const t=zxLeer(c); if(t){ const r=buscarDni(t,false); if(r) return r; } }
+  return null;
+}
 async function abrirScanner(){
-  if(!listo()){ toast('Primero configura la app en Ajustes.'); return; }
+  if(!listo()){ toast('Esta app aún no está conectada.'); return; }
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('Este navegador no deja usar la cámara. Abre la app con Chrome.'); return; }
   $('#scan').hidden=false; $('#scanRes').innerHTML=''; setTxt('Abriendo cámara…');
   try{ stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}}); }
@@ -330,13 +606,12 @@ async function abrirScanner(){
   const v=$('#vid'); v.srcObject=stream; try{ await v.play(); }catch(e){}
   const tr=stream.getVideoTracks()[0], caps=tr.getCapabilities?tr.getCapabilities():{};
   $('#sLuz').hidden=!caps.torch; luz=false;
-  try{ if(caps.focusMode&&caps.focusMode.includes('continuous')) await tr.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch(e){}
+  try{ const adv={}; if(caps.focusMode&&caps.focusMode.includes('continuous')) adv.focusMode='continuous'; if(caps.zoom&&caps.zoom.max>=1.5) adv.zoom=Math.min(1.5,caps.zoom.max); if(Object.keys(adv).length) await tr.applyConstraints({advanced:[adv]}); }catch(e){}
   if(!detector && 'BarcodeDetector' in window){
     try{ const sop=await BarcodeDetector.getSupportedFormats(); const f=sop.filter(x=>['code_128','code_39','code_93','codabar','itf','ean_13','ean_8','upc_a','upc_e'].includes(x)); if(f.length) detector=new BarcodeDetector({formats:f}); }catch(e){ detector=null; }
   }
-  if(!detector) cargarZX().catch(()=>{});
-  cargarTess().catch(()=>{});
-  scanOn=true; pausaHasta=0; setTxt(TXT_GUIA); bucle();
+  cargarZX().catch(()=>{}); cargarTess().catch(()=>{});
+  scanOn=true; pausaHasta=0; candidato={c:'',n:0,t:0}; setTxt(TXT_GUIA); bucle();
 }
 function cerrarScanner(){
   scanOn=false; clearTimeout(loopT);
@@ -347,95 +622,70 @@ async function bucle(){
   if(!scanOn) return;
   const v=$('#vid');
   if(v.readyState>=2 && v.videoWidth && Date.now()>pausaHasta && !ocupado){
-    const r=recorte(v); cnv.width=Math.round(r.w); cnv.height=Math.round(r.h);
-    ctx.drawImage(v,r.x,r.y,r.w,r.h,0,0,cnv.width,cnv.height);
-    let cod=null;
-    try{
-      if(detector){ const bs=await detector.detect(cnv); for(const b of bs){ cod=elegir(b.rawValue,false); if(cod) break; } }
-      else if(zx) cod=zxLeer();
-    }catch(e){}
-    if(cod) await encontrado(cod,'código de barras');
-    else if(tessW && !ocrOcupado && Date.now()-ultOcr>900){ ultOcr=Date.now(); leerNumero(); }
+    const z=zonaTarjeta(v), k=Math.min(1,1100/z.w); cnv.width=Math.round(z.w*k); cnv.height=Math.round(z.h*k);
+    ctx.drawImage(v,z.x,z.y,z.w,z.h,0,0,cnv.width,cnv.height);
+    vuelta++;
+    let r=null;
+    if(detector){ try{ const bs=await detector.detect(cnv); for(const b of bs){ r=buscarDni(b.rawValue,false); if(r) break; } }catch(e){} }
+    if(!r && zx && vuelta%3===0){ const t=zxLeer(cnv); if(t) r=buscarDni(t,false); }
+    if(r) await encontrado(r.dni,'código de barras');
+    else if(workers.some(x=>x.libre)){
+      const copia=document.createElement('canvas'); copia.width=cnv.width; copia.height=cnv.height; copia.getContext('2d').drawImage(cnv,0,0);
+      ocr(copia,PASADAS[vuelta%PASADAS.length]).then(q=>{ if(q && scanOn) aceptar(q,'número impreso'); });
+    }
   }
-  if(scanOn) loopT=setTimeout(bucle,150);
+  if(scanOn) loopT=setTimeout(bucle,140);
 }
-// Prepara la franja del número: gris, quita sombras (divide por el fondo difuminado) y deja negro sobre blanco
-function limpiar(src){
-  const y0=Math.round(src.height*.45), w=src.width, h=src.height-y0, k=Math.min(1,1000/w);
-  const W=Math.round(w*k), H=Math.round(h*k);
-  const a=document.createElement('canvas'); a.width=W; a.height=H; const ga=a.getContext('2d',{willReadFrequently:true});
-  ga.filter='grayscale(1)'; ga.drawImage(src,0,y0,w,h,0,0,W,H);
-  const b=document.createElement('canvas'); b.width=W; b.height=H; const gb=b.getContext('2d',{willReadFrequently:true});
-  gb.filter='blur('+Math.max(8,Math.round(H/7))+'px)'; gb.drawImage(a,0,0);
-  const A=ga.getImageData(0,0,W,H), B=gb.getImageData(0,0,W,H).data, d=A.data;
-  for(let i=0;i<d.length;i+=4){ const v=Math.min(255,d[i]/Math.max(1,B[i])*255); const t=v>200?255:0; d[i]=d[i+1]=d[i+2]=t; d[i+3]=255; }
-  ga.filter='none'; ga.putImageData(A,0,0); return a;
-}
-// Si el código está rayado, lee el número impreso. Solo acepta DNIs que están en BASE DATOS.
-async function leerNumero(){
-  ocrOcupado=true;
-  try{
-    const c=limpiar(cnv);
-    const {data}=await tessW.recognize(c);
-    const t=data.text||''; const cod=elegir(t,true)||elegir(t.replace(/\s+/g,''),true);
-    if(cod && scanOn && Date.now()>pausaHasta && !ocupado) await encontrado(cod,'número impreso');
-  }catch(e){}
-  ocrOcupado=false;
+function aceptar(q,via){
+  if(Date.now()<pausaHasta||ocupado) return;
+  if(q.ex) return encontrado(q.dni,via);
+  const now=Date.now();   // lectura aproximada: se confirma con una segunda igual
+  if(candidato.c===q.dni && now-candidato.t<4000){ candidato={c:'',n:0,t:0}; return encontrado(q.dni,via); }
+  candidato={c:q.dni,n:1,t:now};
 }
 async function encontrado(cod,via){
   const now=Date.now(); if(cod===ultimoCod.c && now-ultimoCod.t<8000) return;
   ultimoCod={c:cod,t:now}; pausaHasta=now+60000; vibrar(60);
-  setTxt('Leído '+cod+' ('+via+')… registrando');
+  const p=S.destajo.mapa.get(cod);
+  setTxt((p?p.nombre:'DNI '+cod)+' · registrando…');
   const r=await procesar({dni:cod});
   if(!scanOn) return;
   if(r && r.tipo){
     ultimoCod.t=Date.now();
-    $('#scanRes').innerHTML=`<div class="res ${r.tipo==='ingreso'?'ing':'sal'}"><div class="big">✔ ${r.tipo==='ingreso'?'INGRESO':'SALIDA'} ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">${r.tipo==='salida'?'Trabajó '+horasTxt(r.horas)+' h'+(r.refri?' (descontado refrigerio '+r.refri+' min)':''):'DNI '+esc(r.dni)}</div></div>`;
-    setTxt('Listo. Pasa la siguiente tarjeta'); pausaHasta=Date.now()+2000;
+    $('#scanRes').innerHTML=`<div class="res ${r.tipo==='ingreso'?'ing':'sal'}"><div class="big">✔ ${r.tipo==='ingreso'?'INGRESO':'SALIDA'} ${hm(r.hora)}</div><div class="nm">${esc(r.nombre)}</div><div class="dt">${r.tipo==='salida'?'Trabajó '+horasTxt(r.horas)+' h'+(r.refri?' (refrigerio '+r.refri+' min)':''):'DNI '+esc(r.dni)} · leído por ${via}</div></div>`;
+    setTxt('Listo. Pasa la siguiente tarjeta'); pausaHasta=Date.now()+1500;
     setTimeout(()=>{ if(scanOn && Date.now()-ultimoCod.t>3000){ $('#scanRes').innerHTML=''; setTxt(TXT_GUIA); } },4000);
-  } else { cerrarScanner(); }   // aviso, persona nueva o error: se atiende en la pantalla principal
+  } else { cerrarScanner(); }
+}
+// Foto: imagen en máxima calidad y varias lecturas seguidas
+async function tomarFoto(){
+  if(!stream) return; const v=$('#vid'); pausaHasta=Date.now()+60000; setTxt('📸 Leyendo la foto…');
+  try{
+    let img=null; const tr=stream.getVideoTracks()[0];
+    try{ if('ImageCapture' in window){ const blob=await new ImageCapture(tr).takePhoto(); img=await createImageBitmap(blob); } }catch(e){ img=null; }
+    const sw=img?img.width:v.videoWidth, sh=img?img.height:v.videoHeight, z=zonaTarjeta(v), fx=sw/v.videoWidth, fy=sh/v.videoHeight;
+    const c=document.createElement('canvas'), k=Math.min(1,1600/(z.w*fx)); c.width=Math.round(z.w*fx*k); c.height=Math.round(z.h*fy*k);
+    c.getContext('2d').drawImage(img||v,z.x*fx,z.y*fy,z.w*fx,z.h*fy,0,0,c.width,c.height);
+    let r=await barras(c);
+    if(!r){ await cargarTess(); for(const p of PASADAS){ const q=await ocr(c,p); if(q){ r=q; break; } } }
+    if(r){ pausaHasta=0; return encontrado(r.dni, r.ex?'foto':'foto (verifica el nombre)'); }
+    setTxt('No se pudo leer. Acerca la tarjeta, evita reflejos o escribe el DNI'); vibrar([200]);
+  }catch(e){ setTxt('No se pudo tomar la foto'); }
+  pausaHasta=Date.now()+800;
 }
 $('#bScan').onclick=abrirScanner;
 $('#sCerrar').onclick=cerrarScanner;
+$('#sFoto').onclick=tomarFoto;
 $('#sDni').onclick=()=>{ cerrarScanner(); $('#dniIn').focus(); };
-$('#sLuz').onclick=async()=>{ try{ luz=!luz; await stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:luz}]}); $('#sLuz').textContent=luz?'🔦 Apagar':'🔦 Luz'; }catch(e){ toast('Este celular no deja usar la linterna aquí.'); } };
-/* ---------- personal ---------- */
-$('#pGuardar').onclick=async()=>{
-  const dni=$('#pDni').value.replace(/\D/g,''); if(dni.length<8){ toast('El DNI debe tener 8 números (C.E. 9).'); return; }
-  $('#pGuardar').disabled=true;
-  try{ const r=await api('guardarPersona',{dni,nombre:$('#pNom').value}); toast((r.nueva?'Agregado: ':'Actualizado: ')+r.persona.nombre); $('#pDni').value='';$('#pNom').value=''; refrescar(true); }
-  catch(e){ toast(e.message); }
-  $('#pGuardar').disabled=false;
-};
+$('#sLuz').onclick=async()=>{ try{ luz=!luz; await stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:luz}]}); $('#sLuz').textContent=luz?'🔦✓':'🔦'; }catch(e){ toast('Este celular no deja usar la linterna aquí.'); } };
 
-/* ---------- ajustes ---------- */
-$('#cGuardar').onclick=async()=>{
-  cfg={url:$('#cUrl').value.trim(),clave:$('#cClave').value.trim(),por:$('#cPor').value.trim(),
-       refri:String(parseInt($('#cRefri').value,10)>=0?parseInt($('#cRefri').value,10):45),umbral:String(parseFloat($('#cUmbral').value)>=0?parseFloat($('#cUmbral').value):6)};
-  ['url','clave','por','refri','umbral'].forEach(k=>ls.set(k,cfg[k])); $('#cRefri').value=cfg.refri; $('#cUmbral').value=cfg.umbral;
-  $('#pillConf').classList.toggle('show',!listo());
-  try{ await api('estado'); toast('Conectado ✔'); refrescar(true); }catch(e){ toast(e.message); }
-};
-$('#cCompartir').onclick=async()=>{
-  if(!listo()){ toast('Primero guarda la URL y la clave.'); return; }
-  const link=location.origin+location.pathname+'?u='+encodeURIComponent(cfg.url)+'&k='+encodeURIComponent(cfg.clave)+'&r='+encodeURIComponent(cfg.refri)+'&h='+encodeURIComponent(cfg.umbral);
-  const texto='App Destajeros – Sala de cierre. Ábrela con Chrome y toca "Instalar": ';
-  try{ if(navigator.share){ await navigator.share({title:'App Destajeros',text:texto,url:link}); return; } }catch(e){ if(e.name==='AbortError') return; }
-  try{ await navigator.clipboard.writeText(texto+link); toast('Link copiado. Pégalo en WhatsApp.'); }catch(e){ window.prompt('Copia este link:',link); }
-};
-let promptInstalar=null;
-window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); promptInstalar=e; $('#cardInstalar').hidden=false; });
-$('#bInstalar').onclick=async()=>{ if(!promptInstalar) return; promptInstalar.prompt(); await promptInstalar.userChoice; promptInstalar=null; $('#cardInstalar').hidden=true; };
 
-/* pestañas */
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
-  ['marcar','personal','ajustes'].forEach(t=>$('#t-'+t).hidden=t!==b.dataset.tab);
-});
-if(!listo()) document.querySelector('nav button[data-tab="ajustes"]').click();
-
+/* ---------- arranque ---------- */
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-refrescar();
+render();
+const t0=ls.get('tab','destajo'); if(t0!=='destajo'){ const b=document.querySelector('nav button[data-tab="'+t0+'"]'); if(b) b.click(); else refrescar('destajo'); } else refrescar('destajo');
+setTimeout(()=>{ if(listo()) refrescar('jornal',true); },1500);
+setTimeout(()=>{ cargarTess().catch(()=>{}); },4000);   // deja listo el lector de números
 </script>
 </body>
 </html>

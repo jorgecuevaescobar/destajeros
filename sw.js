@@ -1,11 +1,16 @@
-// Guarda la app en el celular para que abra rápido. Los datos siempre van a la hoja de Google.
-const CACHE = 'destajeros-v3';
+// Abre la app al instante desde el celular y se actualiza sola en segundo plano.
+const CACHE = 'asistencia-v4';
 const ARCHIVOS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
 self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
-  if (e.request.method !== 'GET' || u.origin !== location.origin) return;   // la hoja de Google no se guarda
-  e.respondWith(fetch(e.request).then(r => { const c = r.clone(); caches.open(CACHE).then(k => k.put(e.request, c)); return r; })
-    .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));
+  if (e.request.method !== 'GET') return;
+  const propio = u.origin === location.origin, libreria = u.hostname === 'cdn.jsdelivr.net';
+  if (!propio && !libreria) return;                       // los datos de la hoja nunca se guardan
+  e.respondWith(caches.open(CACHE).then(async c => {
+    const guardado = await c.match(e.request, { ignoreSearch: propio });
+    const red = fetch(e.request).then(r => { if (r.ok) c.put(e.request, r.clone()); return r; }).catch(() => guardado);
+    return libreria ? (guardado || red) : (guardado ? (e.waitUntil(red), guardado) : red);
+  }));
 });
